@@ -54,7 +54,6 @@ class Controller {
   }
 
   async index(ctx) {
-    console.log(this, this.Model, '----')
     const query = ctx.query;
     const pageSize = Number(ctx.query.pageSize) || 20;
     const page = Number(ctx.query.pageNum) || 1;

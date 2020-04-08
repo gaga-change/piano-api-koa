@@ -3,14 +3,11 @@
 const mongoose = require('mongoose')
 const { Schema } = mongoose
 
-const KeyValueSchema = new Schema({
-  name: { type: String, default: '', trim: true },
-  value: { type: Number },
-});
 
 const schema = new Schema({
   name: { type: String, default: '', trim: true }, // 名称
-  keyValue: { type: [KeyValueSchema], default: [] }, // 键值对
+  status : { type: Number,  }, // 状态
+  phone: {type: String,}, // 手机号码
   remark: { type: String, default: '', trim: true }, // 备注
   createUser: { type: Object, default: null }, // 创建者
   modifyUser: { type: Object, default: null }, // 修改者
@@ -18,4 +15,4 @@ const schema = new Schema({
   timestamps: true,
 })
 
-module.exports = mongoose.model('enum', schema, 'piano_enum');
+module.exports = mongoose.model('student', schema, 'piano_student');
