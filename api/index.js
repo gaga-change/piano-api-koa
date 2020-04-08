@@ -14,7 +14,7 @@ const { checkAdmin, checkAuth } = auth
 
 router.post('/api/auth/login', auth.login)
 router.post('/api/auth/logout', auth.logout)
-router.post('/api/auth/account', checkAuth, auth.account)
+router.get('/api/auth/account', checkAuth, auth.account)
 
 router.post('/api/enums', checkAuth, checkAdmin, enumController.create.bind(enumController))
 router.delete('/api/enums/:id', checkAuth, checkAdmin, enumController.destroy.bind(enumController))

@@ -38,5 +38,6 @@ module.exports = {
   /** 退出登录 */
   async logout(ctx) {
     ctx.session.user = null
+    ctx.body = null
   }
 }
