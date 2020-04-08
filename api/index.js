@@ -21,6 +21,7 @@ router.delete('/api/enums/:id', checkAuth, checkAdmin, enumController.destroy.bi
 router.put('/api/enums/:id', checkAuth, checkAdmin, enumController.update.bind(enumController))
 router.get('/api/enums/:id', enumController.show.bind(enumController))
 router.get('/api/enums', enumController.index.bind(enumController))
+router.get('/api/enumsTotal', enumController.total.bind(enumController))
 
 router.post('/api/courses', checkAuth, courseController.create.bind(courseController))
 router.delete('/api/courses/:id', checkAuth, courseController.destroy.bind(courseController))
