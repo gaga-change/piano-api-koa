@@ -42,6 +42,11 @@ class Controller {
     const params = { ...query }
     delete params.pageSize
     delete params.pageNum
+    Object.keys(params).forEach(key => {
+      if (this.Model.schema.obj[key].type === String) {
+        params[key] = new RegExp(params[key], 'i')
+      }
+    })
     const res1 = this.Model.find(params)
       .sort({ createdAt: -1 })
       .limit(pageSize)
