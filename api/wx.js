@@ -24,7 +24,11 @@ async function getToken() {
 
 
 module.exports = {
+  /** 微信登录 */
   async wxLogin(ctx) {
+    if (ctx.session.openid) {
+      return ctx.body = ctx.session.openid
+    }
     const { code: wxCode } = ctx.query
     ctx.assert(wxCode, code.BadRequest, "需要传递参数 code")
     const res = await axios.get('https://api.weixin.qq.com/sns/oauth2/access_token', {
@@ -42,6 +46,7 @@ module.exports = {
       ctx.body = ctx.session.openid = res.data.openid
     }
   },
+  /** 获取 openid */
   async wxAccount(ctx) {
     ctx.body = ctx.session.openid
   }
