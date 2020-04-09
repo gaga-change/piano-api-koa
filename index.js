@@ -33,9 +33,9 @@ app.use(session(CONFIG, app))
 app.use(logger())
 // Api 接口
 app.use(api)
-app.use(async (ctx) => {
-  ctx.body = '钢琴 - 接口'
-})
+// app.use(async (ctx) => {
+//   ctx.body = '钢琴 - 接口'
+// })
 // 异常监听
 app.on('error', (err) => {
   console.error(err)

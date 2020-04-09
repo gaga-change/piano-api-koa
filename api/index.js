@@ -8,9 +8,13 @@ const spaceAreaController = require('./spaceArea')
 const spaceRuleController = require('./spaceRule')
 const studentController = require('./student')
 const teacherController = require('./teacher')
+const wxController = require('./wx')
 
 
 const { checkAdmin, checkAuth } = auth
+
+router.get('/api/wx/account', wxController.wxAccount)
+router.get('/api/wx/login', wxController.wxLogin)
 
 router.post('/api/auth/login', auth.login)
 router.post('/api/auth/logout', auth.logout)
