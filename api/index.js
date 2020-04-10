@@ -13,8 +13,8 @@ const wxController = require('./wx')
 
 const { checkAdmin, checkAuth } = auth
 
-router.get('/api/wx/account', wxController.wxAccount)
-router.get('/api/wx/login', wxController.wxLogin)
+router.get('/api/wx/:type/account', wxController.wxAccount)
+router.get('/api/wx/:type/login', wxController.wxLogin)
 
 router.post('/api/auth/login', auth.login)
 router.post('/api/auth/logout', auth.logout)

@@ -1,8 +1,29 @@
 const WxCache = require('./models/WxCache')
 const code = require('./code')
 const axios = require('axios')
-const appid = 'wxa2c0420dfeaf8d24'
-const secret = '97c578ea751117d8c77fc63480cba424'
+
+const TEACHER_TYPE = 'teacher'
+const STUDENT_TYPE = 'student'
+function getAppidAndsecret(type) {
+  if (type === TEACHER_TYPE) {
+    return {
+      appid: 'wxa2c0420dfeaf8d24',
+      secret: '97c578ea751117d8c77fc63480cba424',
+    }
+  } else {
+    return {
+      appid: 'wx76bedc76c343e5a2',
+      secret: '15ff5d3185b0e164339f8a0a4ea17049',
+    }
+  }
+}
+
+function isTeacher(type) {
+  return type === TEACHER_TYPE
+}
+function isStudent(type) {
+  return type === STUDENT_TYPE
+}
 
 async function getToken() {
   let wxCache = await WxCache.findOne({})
@@ -26,6 +47,8 @@ async function getToken() {
 module.exports = {
   /** 微信登录 */
   async wxLogin(ctx) {
+    const { type } = ctx.params
+    const { appid, secret } = getAppidAndsecret(type)
     if (ctx.session.openid) {
       return ctx.body = ctx.session.openid
     }
