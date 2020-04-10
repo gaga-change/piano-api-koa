@@ -10,14 +10,16 @@ const studentController = require('./student')
 const teacherController = require('./teacher')
 const wxController = require('./wx')
 const wxTeacherController = require('./wx/teacher')
+const wxStudentController = require('./wx/student')
 
 
 const { checkAdmin, checkAuth } = auth
-const { checkWxAuth } = wxController.auth
+const { teacherAuth, studentAuth } = wxController
 
-router.get('/api/wx/:type/account', wxController.wxAccount)
+router.get('/api/wx/account', wxController.wxAccount)
 router.get('/api/wx/:type/login', wxController.wxLogin)
-router.post('/api/wx/teacher/register',checkWxAuth, wxTeacherController.register)
+router.post('/api/wx/teacher/register', teacherAuth, wxTeacherController.register)
+router.post('/api/wx/student/register', studentAuth, wxStudentController.register)
 
 router.post('/api/auth/login', auth.login)
 router.post('/api/auth/logout', auth.logout)

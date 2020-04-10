@@ -49,8 +49,13 @@ module.exports = {
   async wxLogin(ctx) {
     const { type } = ctx.params
     const { appid, secret } = getAppidAndsecret(type)
-    if (ctx.session.openid) {
-      return ctx.body = ctx.session.openid
+    if ((isTeacher(type) && ctx.session.teacherOpenid) ||
+      (isStudent(type) && ctx.session.studentOpenid)
+    ) {
+      return ctx.body = {
+        teacherOpenid: ctx.session.teacherOpenid,
+        studentOpenid: ctx.session.studentOpenid,
+      }
     }
     const { code: wxCode } = ctx.query
     ctx.assert(wxCode, code.BadRequest, "需要传递参数 code")
@@ -66,16 +71,31 @@ module.exports = {
       ctx.status = code.BadRequest
       ctx.body = res.data
     } else {
-      ctx.body = ctx.session.openid = res.data.openid
+      if (isTeacher(type)) {
+        ctx.session.teacherOpenid = res.data.openid
+      } else {
+        ctx.session.studentOpenid = res.data.openid
+      }
+      ctx.body = {
+        teacherOpenid: ctx.session.teacherOpenid,
+        studentOpenid: ctx.session.studentOpenid,
+      }
     }
   },
   /** 获取 openid */
   async wxAccount(ctx) {
-    ctx.body = ctx.session.openid
+    ctx.body = {
+      teacherOpenid: ctx.session.teacherOpenid,
+      studentOpenid: ctx.session.studentOpenid,
+    }
   },
   /** 微信登录校验 */
-  async auth(ctx, next) {
-    assert(ctx.session.openid, code.Unauthorized, "请在微信平台上操作")
-    next()
-  }
+  async teacherAuth(ctx, next) {
+    ctx.assert(ctx.session.teacherOpenid, code.Unauthorized, "请在微信平台上操作")
+    await next()
+  },
+  async studentAuth(ctx, next) {
+    ctx.assert(ctx.session.studentOpenid, code.Unauthorized, "请在微信平台上操作")
+    await next()
+  },
 }
