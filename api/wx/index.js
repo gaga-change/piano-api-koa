@@ -1,5 +1,5 @@
-const WxCache = require('./models/WxCache')
-const code = require('./code')
+const WxCache = require('../models/WxCache')
+const code = require('../code')
 const axios = require('axios')
 
 const TEACHER_TYPE = 'teacher'
@@ -72,5 +72,10 @@ module.exports = {
   /** 获取 openid */
   async wxAccount(ctx) {
     ctx.body = ctx.session.openid
+  },
+  /** 微信登录校验 */
+  async auth(ctx, next) {
+    assert(ctx.session.openid, code.Unauthorized, "请在微信平台上操作")
+    next()
   }
 }
