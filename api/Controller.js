@@ -24,7 +24,7 @@ class Controller {
     const item = ctx.request.body;
     const model = await this.Model.findById(id)
     ctx.assert(model, code.BadRequest, "数据已被删除！")
-    await this.Model.update({ _id: id }, item)
+    await this.Model.updateOne({ _id: id }, item)
     ctx.body = null
   }
 

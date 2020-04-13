@@ -5,6 +5,7 @@ const { Schema } = mongoose
 
 
 const schema = new Schema({
+  type: { type: String },
   token: { type: String },
   log: [
     {
