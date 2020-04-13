@@ -1,6 +1,6 @@
 const code = require('../code')
 const axios = require('axios')
-const { isTeacher, getAppidAndsecret } = require('./tools')
+const { isTeacher, getAppidAndsecret, isStudent } = require('./tools')
 
 module.exports = {
   /** 微信登录 */
