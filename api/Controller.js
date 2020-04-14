@@ -1,8 +1,9 @@
 const code = require('./code')
 
 class Controller {
-  constructor(model) {
+  constructor(model, options = {}) {
     this.Model = model
+    this.defaultSort = options.defaultSort || { createdAt: -1 }
   }
 
   async create(ctx) {
@@ -48,7 +49,7 @@ class Controller {
       }
     })
     const res1 = this.Model.find(params)
-      .sort({ createdAt: -1 })
+      .sort(this.defaultSort)
       .limit(pageSize)
       .skip((page - 1) * pageSize)
     const res2 = this.Model.countDocuments(params)
