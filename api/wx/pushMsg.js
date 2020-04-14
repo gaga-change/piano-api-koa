@@ -19,7 +19,7 @@ exports.teacherRegisterSuccess = async (teacher) => {
         "value": teacher.phone
       },
       "remark": {
-        "value": "去设置您的空闲时间段吧"
+        "value": "发送消息【空闲时段】，设置您的空闲时间段"
       },
       
     }
@@ -43,7 +43,7 @@ exports.studentRegisterSuccess = async (student) => {
         "value": student.phone
       },
       "remark": {
-        "value": "去设置您的空闲时间段吧"
+        "value": "发送消息【空闲时段】，设置您孩子的空闲时间段"
       },
     }
   }).then(res => {
