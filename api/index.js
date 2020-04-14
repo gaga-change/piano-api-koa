@@ -11,11 +11,16 @@ const teacherController = require('./teacher')
 const wxController = require('./wx')
 const wxTeacherController = require('./wx/teacher')
 const wxStudentController = require('./wx/student')
-
+// const {teacherRegisterSuccess} = require('./wx/pushMsg')
 
 const { checkAdmin, checkAuth } = auth
 const { teacherAuth, studentAuth } = wxController
 
+router.get('/test', async (ctx) => {
+  ctx.body = "gaga"
+})
+
+router.get('/api/wx/:type/tagsSync', wxController.wxTagSync)
 router.get('/api/wx/account', wxController.wxAccount)
 router.get('/api/wx/:type/login', wxController.wxLogin)
 router.post('/api/wx/teacher/register', teacherAuth, wxTeacherController.register)
@@ -50,11 +55,11 @@ router.put('/api/spaceAreas/:id', checkAuth, spaceAreaController.update.bind(spa
 router.get('/api/spaceAreas/:id', spaceAreaController.show.bind(spaceAreaController))
 router.get('/api/spaceAreas', spaceAreaController.index.bind(spaceAreaController))
 
-router.post('/api/spaceRule', checkAuth, spaceRuleController.create.bind(spaceRuleController))
-router.delete('/api/spaceRule/:id', checkAuth, spaceRuleController.destroy.bind(spaceRuleController))
-router.put('/api/spaceRule/:id', checkAuth, spaceRuleController.update.bind(spaceRuleController))
-router.get('/api/spaceRule/:id', spaceRuleController.show.bind(spaceRuleController))
-router.get('/api/spaceRule', spaceRuleController.index.bind(spaceRuleController))
+router.post('/api/spaceRules', checkAuth, spaceRuleController.create.bind(spaceRuleController))
+router.delete('/api/spaceRules/:id', checkAuth, spaceRuleController.destroy.bind(spaceRuleController))
+router.put('/api/spaceRules/:id', checkAuth, spaceRuleController.update.bind(spaceRuleController))
+router.get('/api/spaceRules/:id', spaceRuleController.show.bind(spaceRuleController))
+router.get('/api/spaceRules', spaceRuleController.index.bind(spaceRuleController))
 
 router.post('/api/students', checkAuth, studentController.create.bind(studentController))
 router.delete('/api/students/:id', checkAuth, studentController.destroy.bind(studentController))

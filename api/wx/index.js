@@ -1,8 +1,13 @@
 const code = require('../code')
 const axios = require('axios')
-const { isTeacher, getAppidAndsecret, isStudent } = require('./tools')
+const { isTeacher, getAppidAndsecret, isStudent, syncTags } = require('./tools')
 
 module.exports = {
+  /** 同步微信标签 */
+  async wxTagSync(ctx) {
+    const { type } = ctx.params
+    ctx.body = await syncTags(type)
+  },
   /** 微信登录 */
   async wxLogin(ctx) {
     const { type } = ctx.params
@@ -52,6 +57,7 @@ module.exports = {
     ctx.assert(ctx.session.teacherOpenid, code.Unauthorized, "请在微信平台上操作")
     await next()
   },
+  /** 微信登录校验 */
   async studentAuth(ctx, next) {
     ctx.assert(ctx.session.studentOpenid, code.Unauthorized, "请在微信平台上操作")
     await next()

@@ -1,4 +1,5 @@
 const WxCacheToken = require('../models/WxCacheToken')
+const WxCacheTags = require('../models/WxCacheTags')
 const axios = require('axios')
 
 const TEACHER_TYPE = 'teacher'
@@ -44,6 +45,32 @@ async function getToken(type) {
   return wxCacheToken.token
 }
 
+async function getTags(type) {
+  let wxCacheTags = await WxCacheTags.findOne({ type })
+  const token = await getToken(type)
+  if (wxCacheTags === null) { // 不存在则获取 保存
+    const res = await axios.get(`https://api.weixin.qq.com/cgi-bin/tags/get?access_token=${token}`)
+    wxCacheTags = new WxCacheTags({ type, tags: res.data })
+    await wxCacheTags.save()
+  }
+  return wxCacheTags.tags
+}
+
+async function syncTags(type) {
+  let wxCacheTags = await WxCacheTags.findOne({ type })
+  const token = await getToken(type)
+  const res = await axios.get(`https://api.weixin.qq.com/cgi-bin/tags/get?access_token=${token}`)
+  const tags = res.data.tags
+  if (wxCacheTags === null) {
+    console.log('新建标签缓存')
+    wxCacheTags = new WxCacheTags({ type, tags })
+  } else {
+    console.log('标签缓存更新')
+    wxCacheTags.tags = tags
+  }
+  await wxCacheTags.save()
+  return wxCacheTags.tags
+}
 
 
 module.exports = {
@@ -51,6 +78,7 @@ module.exports = {
   isTeacher,
   getAppidAndsecret,
   getToken,
+  syncTags,
   TEACHER_TYPE,
   STUDENT_TYPE
 }
