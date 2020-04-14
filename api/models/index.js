@@ -5,7 +5,7 @@ const Course = require('./Course')
 const LeaveArea = require('./LeaveArea')
 const SpaceArea = require('./SpaceArea')
 const SpaceRule = require('./SpaceRule')
-const WxCache = require('./WxCache')
+const WxCacheToken = require('./WxCacheToken')
 
 module.exports = {
   Enums,
@@ -15,5 +15,5 @@ module.exports = {
   LeaveArea,
   SpaceArea,
   SpaceRule,
-  WxCache
+  WxCacheToken
 }

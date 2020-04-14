@@ -16,4 +16,4 @@ const schema = new Schema({
   timestamps: true,
 })
 
-module.exports = mongoose.model('wxCache', schema, 'piano_wx_cache');
+module.exports = mongoose.model('wxCacheToken', schema, 'piano_wx_cache_token');
