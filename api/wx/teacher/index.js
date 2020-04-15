@@ -1,4 +1,6 @@
 const { Teacher } = require('../../models')
+const { informTeacherRegister } = require('../pushMsg')
+
 
 
 exports.register = async (ctx) => {
@@ -12,5 +14,6 @@ exports.register = async (ctx) => {
     teacher = new Teacher(body)
     await teacher.save()
   }
+  informTeacherRegister(teacher)
   ctx.body = teacher
 }

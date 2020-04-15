@@ -1,5 +1,5 @@
 const axios = require('axios')
-const { getToken, TEACHER_TYPE, STUDENT_TYPE } = require('./tools')
+const { getToken, TEACHER_TYPE, STUDENT_TYPE, getUserByTagName } = require('./tools')
 
 exports.teacherRegisterSuccess = async (teacher) => {
   const token = await getToken(TEACHER_TYPE)
@@ -49,4 +49,32 @@ exports.studentRegisterSuccess = async (student) => {
   }).then(res => {
     console.log(res.data)
   })
+}
+
+exports.informTeacherRegister = async (teacher) =>  {
+  const openids = await getUserByTagName('teacher', '消息推送')
+  const token = await getToken(TEACHER_TYPE)
+  openids.forEach(openid => {
+    axios.post(`https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=${token}`, {
+      "touser": openid,
+      "template_id": "yMD7XbC7p4ODXzJ605lL3oZhKICAskFSalrCbNanKGo",
+      "url": "",
+      "topcolor": "#FF0000",
+      "data": {
+        "first": {
+          "value": "有新的注册信息，请及时受理"
+        },
+        "keyword1": {
+          "value": teacher.name
+        },
+        "keyword2": {
+          "value": teacher.phone
+        },
+        "remark": {
+          "value": "请到后台管理中审批"
+        },
+      }
+    })
+  })
+
 }

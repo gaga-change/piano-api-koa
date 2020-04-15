@@ -11,13 +11,15 @@ const teacherController = require('./teacher')
 const wxController = require('./wx')
 const wxTeacherController = require('./wx/teacher')
 const wxStudentController = require('./wx/student')
-// const {teacherRegisterSuccess} = require('./wx/pushMsg')
 
 const { checkAdmin, checkAuth } = auth
 const { teacherAuth, studentAuth } = wxController
 
+
+const {informTeacherRegister} = require('./wx/pushMsg')
 router.get('/test', async (ctx) => {
-  ctx.body = "gaga"
+  informTeacherRegister({name: "gaga", phone: "test"})
+  ctx.body = openids
 })
 
 router.get('/api/wx/:type/tagsSync', wxController.wxTagSync)

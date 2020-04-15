@@ -1,7 +1,6 @@
 const WxCacheToken = require('../models/WxCacheToken')
 const WxCacheTags = require('../models/WxCacheTags')
 const axios = require('axios')
-
 const TEACHER_TYPE = 'teacher'
 const STUDENT_TYPE = 'student'
 function getAppidAndsecret(type) {
@@ -72,6 +71,23 @@ async function syncTags(type) {
   return wxCacheTags.tags
 }
 
+async function getUserByTag(type, tagid) {
+  const token = await getToken(type)
+  const res = await axios.post(`https://api.weixin.qq.com/cgi-bin/user/tag/get?access_token=${token}`, { tagid })
+  console.log(res.data.data)
+  return res.data.data.openid
+}
+
+async function getUserByTagName(type, tagName) {
+  const tags = await getTags(type)
+  const tag = tags.find(v => v.name === tagName)
+  if (!tag) {
+    console.log('无此标签 ', tagName)
+    return []
+  } else {
+    return await getUserByTag(type, tag.id)
+  }
+}
 
 module.exports = {
   isStudent,
@@ -79,6 +95,8 @@ module.exports = {
   getAppidAndsecret,
   getToken,
   syncTags,
+  getTags,
+  getUserByTagName,
   TEACHER_TYPE,
   STUDENT_TYPE
 }
