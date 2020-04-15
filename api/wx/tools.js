@@ -33,7 +33,7 @@ async function getToken(type) {
   if (wxCacheToken.token && (Date.now() - wxCacheToken.updatedAt.getTime()) < 1000 * 60 * 100) {
     console.log("读取缓存 wxCacheToken - ")
   } else { // 超时
-    console.log("缓存失效或未读取，重新获取", new Date().toLocaleString())
+    console.log("token缓存失效或未读取，重新获取", new Date().toLocaleString())
     const { appid, secret } = getAppidAndsecret(type)
     const { data } = await axios.get(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appid}&secret=${secret}`)
     const token = data.access_token

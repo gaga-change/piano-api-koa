@@ -51,8 +51,9 @@ exports.studentRegisterSuccess = async (student) => {
   })
 }
 
+/** 通知管理员 教师资料提交 */
 exports.informTeacherRegister = async (teacher) =>  {
-  const openids = await getUserByTagName('teacher', '消息推送')
+  const openids = await getUserByTagName(TEACHER_TYPE, '消息推送')
   const token = await getToken(TEACHER_TYPE)
   openids.forEach(openid => {
     axios.post(`https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=${token}`, {
@@ -76,5 +77,32 @@ exports.informTeacherRegister = async (teacher) =>  {
       }
     })
   })
+}
 
+/** 通知管理员学生资料提交 */
+exports.informStudentRegister = async (student) =>  {
+  const openids = await getUserByTagName(STUDENT_TYPE, '消息推送')
+  const token = await getToken(STUDENT_TYPE)
+  openids.forEach(openid => {
+    axios.post(`https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=${token}`, {
+      "touser": openid,
+      "template_id": "l5w82zR0G7PyMz5NY0fKn0Lz6nRJdv3kpZedJnSJYeQ",
+      "url": "",
+      "topcolor": "#FF0000",
+      "data": {
+        "first": {
+          "value": "有新的注册信息，请及时受理"
+        },
+        "keyword1": {
+          "value": `学生信息: ${student.name}-${student.phone}`
+        },
+        "keyword2": {
+          "value": '待审核'
+        },
+        "remark": {
+          "value": "请到后台管理中审批"
+        },
+      }
+    })
+  })
 }
