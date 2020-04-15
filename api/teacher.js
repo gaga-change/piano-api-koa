@@ -10,10 +10,10 @@ class TeacherController extends Controller {
   async update(ctx) {
     const { body } = ctx.request
     const { status } = body
-
+    const {id} = ctx.params
+    const oldTeacher = await Teacher.findById(id)
     await super.update(ctx)
-    console.log(body)
-    if (status === 1) {
+    if (status === 1 && oldTeacher.status !== 1) {
       teacherRegisterSuccess(body)
     }
   }
