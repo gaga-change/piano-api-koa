@@ -10,6 +10,7 @@ const schema = new Schema({
   date: { type: Date, }, // 日期
   teacher: { type: Schema.Types.ObjectId, ref: 'Teacher' },
   student: { type: Schema.Types.ObjectId, ref: 'Student' },
+  spaceRule: { type: Schema.Types.ObjectId, ref: 'SpaceRule' },
   remark: { type: String, default: '', trim: true }, // 备注
   createUser: { type: Object, default: null }, // 创建者
   modifyUser: { type: Object, default: null }, // 修改者
