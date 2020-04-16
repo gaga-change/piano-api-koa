@@ -21,4 +21,4 @@ const schema = new Schema({
   timestamps: true,
 })
 
-module.exports = mongoose.model('teacher', schema, 'piano_teacher');
+module.exports = mongoose.model('Teacher', schema, 'piano_teacher');

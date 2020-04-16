@@ -20,4 +20,4 @@ const schema = new Schema({
   timestamps: true,
 })
 
-module.exports = mongoose.model('wxCacheTags', schema, 'piano_wx_cache_tags');
+module.exports = mongoose.model('WxCacheTags', schema, 'piano_wx_cache_tags');

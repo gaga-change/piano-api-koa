@@ -18,4 +18,4 @@ const schema = new Schema({
   timestamps: true,
 })
 
-module.exports = mongoose.model('enum', schema, 'piano_enum');
+module.exports = mongoose.model('Enum', schema, 'piano_enum');

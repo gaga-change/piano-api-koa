@@ -17,4 +17,4 @@ const schema = new Schema({
   timestamps: true,
 })
 
-module.exports = mongoose.model('student', schema, 'piano_student');
+module.exports = mongoose.model('Student', schema, 'piano_student');
