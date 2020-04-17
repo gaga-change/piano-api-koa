@@ -3,20 +3,40 @@ const SpaceArea = require('./models/SpaceArea')
 const Controller = require('./Controller')
 class SpaceAreaController extends Controller {
   constructor(model) {
-    super(model, {defaultSort: {date: -1}})
+    super(model, { defaultSort: { date: -1 } })
   }
   async index(ctx) {
     const query = ctx.query;
     const pageSize = Number(ctx.query.pageSize) || 20
     const page = Number(ctx.query.pageNum) || 1
     const params = { ...query }
+    if (params.hasTeacher) {
+      params.teacher = { $exists: true }
+      delete params.hasTeacher
+    }
+    if (params.hasStudent) {
+      params.student = { $exists: true }
+      delete params.hasStudent
+    }
+    if (params.startTime && params.endTime) {
+      let { startTime, endTime } = params
+      startTime = new Date(startTime)
+      endTime = new Date(endTime)
+      delete params.startTime
+      delete params.endTime
+      params.$or = [
+        { startTime: { $gte: startTime, $lte: endTime } },
+        { endTime: { $gte: startTime, $lte: endTime } },
+      ]
+    }
     delete params.pageSize
     delete params.pageNum
     Object.keys(params).forEach(key => {
-      if (this.Model.schema.obj[key].type === String) {
+      if (this.Model.schema.obj[key] && this.Model.schema.obj[key].type === String) {
         params[key] = new RegExp(params[key], 'i')
       }
     })
+    console.log(params)
     const res1 = SpaceArea.find(params)
       .sort(this.defaultSort)
       .limit(pageSize)
