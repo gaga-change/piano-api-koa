@@ -25,8 +25,8 @@ class SpaceAreaController extends Controller {
       delete params.startTime
       delete params.endTime
       params.$or = [
-        { startTime: { $gte: startTime, $lte: endTime } },
-        { endTime: { $gte: startTime, $lte: endTime } },
+        { startTime: { $gte: startTime, $lt: endTime } },
+        { endTime: { $gt: startTime, $lte: endTime } },
       ]
     }
     delete params.pageSize
