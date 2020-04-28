@@ -6,7 +6,7 @@ exports.teacherRegisterSuccess = async (teacher) => {
   axios.post(`https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=${token}`, {
     "touser": teacher.openid,
     "template_id": "P2InMFm7yqOiij-9Rmzt7Qdg3FiUcwbaF3tTHu5qL-o",
-    "url": "http://static.local.shop.csj361.com/teacher/teacherRegister",
+    "url": "http://page.carry.junn.top/teacher/teacherRegister",
     "topcolor": "#FF0000",
     "data": {
       "first": {
@@ -31,7 +31,7 @@ exports.studentRegisterSuccess = async (student) => {
   axios.post(`https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=${token}`, {
     "touser": student.openid,
     "template_id": "blQsIsRXXa4V8bltStYNPQZBo-tXqDpsMNRDcvH0mlI",
-    "url": "http://static.local.shop.csj361.com/teacher/teacherRegister",
+    "url": "http://page.carry.junn.top/teacher/teacherRegister",
     "data": {
       "first": {
         "value": "恭喜您成为Carry陪练的会员！"
