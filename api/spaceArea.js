@@ -10,6 +10,7 @@ class SpaceAreaController extends Controller {
 
   /** 自动生成空闲时间 */
   async autoCreate(ctx) {
+    let createNum = 0
     // await SpaceArea.deleteMany({})
     const temp = await SpaceArea.findOne({}).sort({ date: -1 })
     // 获取开始自动生成空闲时间的日期
@@ -23,11 +24,14 @@ class SpaceAreaController extends Controller {
         const { startTime, endTime, teacher, student } = spaceRule
         let spaceArea = new SpaceArea({ startTime, endTime, teacher, student, spaceRule, date })
         await spaceArea.save()
+        createNum++
       }
     }
     // 清除失效的空闲时间
-    const removeList = await SpaceArea.deleteMany({ date: { $lt: initHour(new Date()) } })
-    ctx.body = removeList
+    await SpaceArea.deleteMany({ date: { $lt: initHour(new Date()) } })
+    ctx.body = {
+      createNum
+    }
   }
 
   async index(ctx) {
