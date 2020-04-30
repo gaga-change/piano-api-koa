@@ -3,13 +3,13 @@ const SpaceArea = require('./models/SpaceArea')
 const SpaceRule = require('./models/SpaceRule')
 const Controller = require('./Controller')
 const { validDays, initHour, ONE_DAY_TIME } = require('./tools')
+
 class SpaceAreaController extends Controller {
   constructor(model) {
     super(model, { defaultSort: { date: -1 } })
   }
 
-  /** 自动生成空闲时间 */
-  async autoCreate(ctx) {
+  async autoCreateService() {
     let createNum = 0
     // await SpaceArea.deleteMany({})
     const temp = await SpaceArea.findOne({}).sort({ date: -1 })
@@ -29,8 +29,13 @@ class SpaceAreaController extends Controller {
     }
     // 清除失效的空闲时间
     await SpaceArea.deleteMany({ date: { $lt: initHour(new Date()) } })
+    return createNum
+  }
+
+  /** 自动生成空闲时间 */
+  async autoCreate(ctx) {
     ctx.body = {
-      createNum
+      createNum: await this.autoCreateService()
     }
   }
 

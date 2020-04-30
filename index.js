@@ -4,9 +4,11 @@ const logger = require('koa-logger')
 const koaBody = require('koa-body')
 const session = require('koa-session')
 const { PORT, MONGO_LINK } = require('./config')
+const scheduleCronstyle = require('./schedule')
 const api = require('./api')
 const app = new Koa()
 
+setImmediate(scheduleCronstyle)
 // MongoDB 连接
 mongoose.connect(MONGO_LINK, { useNewUrlParser: true, useUnifiedTopology: true , useFindAndModify: false})
 const db = mongoose.connection
