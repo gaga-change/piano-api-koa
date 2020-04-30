@@ -2,7 +2,7 @@
 const SpaceArea = require('./models/SpaceArea')
 const SpaceRule = require('./models/SpaceRule')
 const Controller = require('./Controller')
-const { validDays, initHour, ONE_DAY_TIME } = require('./tools')
+const { validDays, initHour, ONE_DAY_TIME, copyHour } = require('./tools')
 
 class SpaceAreaController extends Controller {
   constructor(model) {
@@ -22,7 +22,7 @@ class SpaceAreaController extends Controller {
       for (let j in spaceRules) { // 循环规则，创建空闲时间
         let spaceRule = spaceRules[j]
         const { startTime, endTime, teacher, student } = spaceRule
-        let spaceArea = new SpaceArea({ startTime, endTime, teacher, student, spaceRule, date })
+        let spaceArea = new SpaceArea({ startTime: copyHour(date, startTime), endTime: copyHour(date, endTime), teacher, student, spaceRule, date })
         await spaceArea.save()
         createNum++
       }
@@ -61,6 +61,7 @@ class SpaceAreaController extends Controller {
       params.$or = [
         { startTime: { $gte: startTime, $lt: endTime } },
         { endTime: { $gt: startTime, $lte: endTime } },
+        { startTime: { $lte: startTime }, endTime: { $gte: endTime } }
       ]
     }
     delete params.pageSize
