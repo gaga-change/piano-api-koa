@@ -1,10 +1,35 @@
 
 const SpaceArea = require('./models/SpaceArea')
+const SpaceRule = require('./models/SpaceRule')
 const Controller = require('./Controller')
+const { validDays, initHour, ONE_DAY_TIME } = require('./tools')
 class SpaceAreaController extends Controller {
   constructor(model) {
     super(model, { defaultSort: { date: -1 } })
   }
+
+  /** 自动生成空闲时间 */
+  async autoCreate(ctx) {
+    // await SpaceArea.deleteMany({})
+    const temp = await SpaceArea.findOne({}).sort({ date: -1 })
+    // 获取开始自动生成空闲时间的日期
+    const days = validDays(temp ? (temp.date.getTime() + ONE_DAY_TIME) : new Date())
+    for (let i in days) {
+      let date = days[i]
+      let week = date.getDay() === 0 ? 7 : date.getDay() // 获取星期
+      const spaceRules = await SpaceRule.find({ week }) // 获取当天规则，含量大问题，量大需要后期分批处理
+      for (let j in spaceRules) { // 循环规则，创建空闲时间
+        let spaceRule = spaceRules[j]
+        const { startTime, endTime, teacher, student } = spaceRule
+        let spaceArea = new SpaceArea({ startTime, endTime, teacher, student, spaceRule, date })
+        await spaceArea.save()
+      }
+    }
+    // 清除失效的空闲时间
+    const removeList = await SpaceArea.deleteMany({ date: { $lt: initHour(new Date()) } })
+    ctx.body = removeList
+  }
+
   async index(ctx) {
     const query = ctx.query;
     const pageSize = Number(ctx.query.pageSize) || 20
@@ -36,7 +61,6 @@ class SpaceAreaController extends Controller {
         params[key] = new RegExp(params[key], 'i')
       }
     })
-    console.log(params)
     const res1 = SpaceArea.find(params)
       .sort(this.defaultSort)
       .limit(pageSize)

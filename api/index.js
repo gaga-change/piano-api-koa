@@ -56,6 +56,7 @@ router.delete('/api/spaceAreas/:id', checkAuth, spaceAreaController.destroy.bind
 router.put('/api/spaceAreas/:id', checkAuth, spaceAreaController.update.bind(spaceAreaController))
 router.get('/api/spaceAreas/:id', spaceAreaController.show.bind(spaceAreaController))
 router.get('/api/spaceAreas', spaceAreaController.index.bind(spaceAreaController))
+router.get('/api/spaceAreasAutoCreate', spaceAreaController.autoCreate.bind(spaceAreaController))
 
 router.post('/api/spaceRules', checkAuth, spaceRuleController.create.bind(spaceRuleController))
 router.delete('/api/spaceRules/:id', checkAuth, spaceRuleController.destroy.bind(spaceRuleController))

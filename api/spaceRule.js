@@ -3,56 +3,30 @@ const SpaceRule = require('./models/SpaceRule')
 const Controller = require('./Controller')
 const SpaceArea = require('./models/SpaceArea')
 
+const { validWeek, copyHour } = require('./tools')
 
-const getDateAreasByRule = (t, week, space) => {
-  let date = new Date(t)
-  let hour = date.getHours()
-  let min = date.getMinutes()
-  const res = []
-  const nowDate = new Date()
-  const nowWeek = nowDate.getDay()
-  const tempDays = week - nowWeek
-  const oneDayTime = 24 * 60 * 60 * 1000
-  const addTime = (tempDays > 0 ? tempDays : (7 + tempDays)) * oneDayTime
-  const startTime = new Date(nowDate.getTime() + addTime)
-  startTime.setHours(hour, min, 0, 0)
-  res.push({
-    startTime,
-    endTime: new Date(startTime.getTime() + space)
-  })
-  if (tempDays === 0) {
-    let temp = new Date()
-    temp.setHours(hour, min, 0, 0)
-    res.push({
-      startTime: temp,
-      endTime: new Date(temp.getTime() + space)
-    })
-  }
-  return res
-}
-
-/** 自动新增空闲时间（当天 & 后7天） */
+/** 自动新增空闲时间 */
 const setSpaceArea = async spaceRule => {
-  /*
-    当天是周几 nowWeek
-    week - nowWeek
-      if > 0
-        当天+【差的天数】天  设置时分
-      if < 0
-        当天 + 7 - 【差的天数】天  设置时分
-  */
   const { startTime, endTime, week, teacher, student } = spaceRule
-  getDateAreasByRule(startTime, week, endTime - startTime).forEach(item => {
-    let date = new Date(item.startTime)
-    date.setHours(0,0,0,0)
-    const spaceArea = new SpaceArea({ teacher, student, spaceRule, date, ...item })
-    spaceArea.save()
-  })
+  const days = validWeek(week) // 输入星期，返回有效日期列表
+  for (let i in days) {
+    let date = days[i]
+    const spaceArea = new SpaceArea({
+      teacher,
+      student,
+      spaceRule,
+      date,
+      startTime: copyHour(date, startTime),
+      endTime: copyHour(date, endTime)
+    })
+    await spaceArea.save()
+  }
 }
+
 const delSpaceArea = async id => {
-  let res = await SpaceArea.deleteMany({ spaceRule: id })
-  console.log(res)
+  await SpaceArea.deleteMany({ spaceRule: id })
 }
+
 class SpaceRuleController extends Controller {
   constructor(model) {
     super(model, { defaultSort: { startTime: 1 } })
