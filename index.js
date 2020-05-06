@@ -40,7 +40,7 @@ app.use(api)
 // })
 // 异常监听
 app.on('error', (err) => {
-  console.error(err)
+  console.error(err.message)
 })
 
 app.listen(PORT, () => {
