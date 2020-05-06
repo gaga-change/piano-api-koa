@@ -9,6 +9,7 @@ class SpaceAreaController extends Controller {
     super(model, { defaultSort: { date: -1 } })
   }
 
+  /** 自动创建空闲时间，返回创建数量 */
   async autoCreateService() {
     let createNum = 0
     // await SpaceArea.deleteMany({})

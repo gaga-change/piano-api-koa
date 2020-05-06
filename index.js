@@ -10,7 +10,7 @@ const app = new Koa()
 
 setImmediate(scheduleCronstyle)
 // MongoDB 连接
-mongoose.connect(MONGO_LINK, { useNewUrlParser: true, useUnifiedTopology: true , useFindAndModify: false})
+mongoose.connect(MONGO_LINK, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false })
 const db = mongoose.connection
 // Session 配置参数
 const CONFIG = {
@@ -40,7 +40,7 @@ app.use(api)
 // })
 // 异常监听
 app.on('error', (err) => {
-  console.error(err.message)
+  console.error(err)
 })
 
 app.listen(PORT, () => {

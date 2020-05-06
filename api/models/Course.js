@@ -10,8 +10,10 @@ const schema = new Schema({
   date: { type: Date, }, // 日期
   teacher: { type: Schema.Types.ObjectId, ref: 'Teacher' },
   student: { type: Schema.Types.ObjectId, ref: 'Student' },
-  teacherTag: {type: Number}, // 老师标签
-  studentTag: {type: Number}, // 学生标签
+  teacherSpaceRule: { type: Schema.Types.ObjectId, ref: 'SpaceRule' },
+  studentSpaceRule: { type: Schema.Types.ObjectId, ref: 'SpaceRule' },
+  teacherTag: { type: Number }, // 老师标签
+  studentTag: { type: Number }, // 学生标签
   status: { type: Number, }, // 状态
   classType: { type: Number, }, // 课类型
   classTime: { type: Number, }, // 课时长
