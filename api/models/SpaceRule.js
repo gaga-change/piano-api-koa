@@ -24,4 +24,17 @@ schema.method({
   }
 })
 
+schema.static({
+  /** 根据周查找 */
+  findByWeek(week) {
+    const startTime = new Date()
+    startTime.setFullYear(2019, 6, week)
+    startTime.setHours(0, 0, 0, 0)
+    const endTime = new Date()
+    endTime.setFullYear(2019, 6, week + 1)
+    endTime.setHours(0, 0, 0, 0)
+    return this.find({startTime: {$gte: startTime, $lt: endTime}})
+  }
+})
+
 module.exports = mongoose.model('SpaceRule', schema, 'piano_space_rule');

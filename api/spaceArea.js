@@ -19,7 +19,7 @@ class SpaceAreaController extends Controller {
     for (let i in days) {
       let date = days[i]
       let week = date.getDay() === 0 ? 7 : date.getDay() // 获取星期
-      const spaceRules = await SpaceRule.find({ week }) // 获取当天规则，含量大问题，量大需要后期分批处理
+      const spaceRules = await SpaceRule.findByWeek(week) // 获取当天规则，含量大问题，量大需要后期分批处理
       for (let j in spaceRules) { // 循环规则，创建空闲时间
         let spaceRule = spaceRules[j]
         const { startTime, endTime, teacher, student } = spaceRule
