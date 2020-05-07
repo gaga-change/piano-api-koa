@@ -48,10 +48,10 @@ exports.validDays = (startDate) => {
   return res
 }
 
-/** 指定星期（1~7 | 0~6） 返回所有有效期（当天算起） */
-exports.validWeek = (week) => {
+/** 指定规则开始时间， 返回所有有效期（当天算起） */
+exports.accordWithRule = (startDateRule) => {
   let res = []
-  week = week === 7 ? 0 : week
+  const week = startDateRule.getDay()
   exports.validDays().forEach(date => {
     if (date.getDay() === week) {
       res.push(date)

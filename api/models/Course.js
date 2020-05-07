@@ -2,12 +2,12 @@
 
 const mongoose = require('mongoose')
 const { Schema } = mongoose
-
+const { initHour } = require('../tools')
 
 const schema = new Schema({
   startTime: { type: Date, }, // 开始时间
   endTime: { type: Date }, // 结束时间，
-  date: { type: Date, }, // 日期
+  // date: { type: Date, }, // 日期
   teacher: { type: Schema.Types.ObjectId, ref: 'Teacher' },
   student: { type: Schema.Types.ObjectId, ref: 'Student' },
   teacherSpaceRule: { type: Schema.Types.ObjectId, ref: 'SpaceRule' },
@@ -22,6 +22,10 @@ const schema = new Schema({
   modifyUser: { type: Object, default: null }, // 修改者
 }, {
   timestamps: true,
+})
+
+schema.virtual('date').get(function () {
+  return initHour(this.startTime)
 })
 
 module.exports = mongoose.model('Course', schema, 'piano_space_course');

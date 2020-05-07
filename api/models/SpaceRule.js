@@ -7,7 +7,6 @@ const { Schema } = mongoose
 const schema = new Schema({
   startTime: { type: Date, }, // 开始时间
   endTime: { type: Date }, // 结束时间，
-  week: { type: Number, }, // 周几： 【1~7】,
   teacher: { type: Schema.Types.ObjectId, ref: 'Teacher' },
   student: { type: Schema.Types.ObjectId, ref: 'Student' },
   remark: { type: String, default: '', trim: true }, // 备注

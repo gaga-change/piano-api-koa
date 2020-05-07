@@ -3,12 +3,12 @@ const SpaceRule = require('./models/SpaceRule')
 const Controller = require('./Controller')
 const SpaceArea = require('./models/SpaceArea')
 
-const { validWeek, copyHour } = require('./tools')
+const { accordWithRule, copyHour } = require('./tools')
 
 /** 自动新增空闲时间 */
 const setSpaceArea = async spaceRule => {
-  const { startTime, endTime, week, teacher, student } = spaceRule
-  const days = validWeek(week) // 输入星期，返回有效日期列表
+  const { startTime, endTime, teacher, student } = spaceRule
+  const days = accordWithRule(startTime) // 输入星期，返回有效日期列表
   for (let i in days) {
     let date = days[i]
     const spaceArea = new SpaceArea({
