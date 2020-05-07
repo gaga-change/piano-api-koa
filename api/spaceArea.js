@@ -45,15 +45,23 @@ class SpaceAreaController extends Controller {
     const pageSize = Number(ctx.query.pageSize) || 20
     const page = Number(ctx.query.pageNum) || 1
     const params = { ...query }
-    if (params.hasTeacher) {
+    if (params.hasTeacher) { // 老师
       params.teacher = { $exists: true }
       delete params.hasTeacher
     }
-    if (params.hasStudent) {
+    if (params.hasStudent) { // 学生
       params.student = { $exists: true }
       delete params.hasStudent
     }
-    if (params.startTime && params.endTime) {
+    if (params.date) { // 按日期查找
+      let start = initHour(params.date)
+      let end = new Date(start.getTime() + ONE_DAY_TIME)
+      params.startTime = {
+        $gte: start,
+        $lt: end
+      }
+      delete params.date
+    } else if (params.startTime && params.endTime) { // 按时间有交集查找
       let { startTime, endTime } = params
       startTime = new Date(startTime)
       endTime = new Date(endTime)
