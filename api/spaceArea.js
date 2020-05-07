@@ -6,13 +6,13 @@ const { validDays, initHour, ONE_DAY_TIME, copyHour } = require('./tools')
 
 class SpaceAreaController extends Controller {
   constructor(model) {
-    super(model, { defaultSort: { date: -1 } })
+    super(model, { })
   }
 
   /** 自动创建空闲时间，返回创建数量 */
   async autoCreateService() {
     let createNum = 0
-    // await SpaceArea.deleteMany({})
+    await SpaceArea.deleteMany({})
     const temp = await SpaceArea.findOne({}).sort({ date: -1 })
     // 获取开始自动生成空闲时间的日期
     const days = validDays(temp ? (temp.date.getTime() + ONE_DAY_TIME) : new Date())
@@ -81,7 +81,7 @@ class SpaceAreaController extends Controller {
       }
     })
     const res1 = SpaceArea.find(params)
-      .sort(this.defaultSort)
+      .sort({startTime: 1})
       .limit(pageSize)
       .populate({ path: 'teacher', select: 'name' })
       .populate({ path: 'student', select: 'name' })
