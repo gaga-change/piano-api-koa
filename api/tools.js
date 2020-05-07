@@ -5,8 +5,12 @@ const ONE_DAY_TIME = 24 * 60 * 60 * 1000 // 一天的毫秒数
 exports.ONE_DAY_TIME = ONE_DAY_TIME
 
 /** 初始化时分秒，默认日期当天（时分秒为0的） */
-const initHour = date => {
-  date = new Date(date)
+const initHour = (date) => {
+  if (date) {
+    date = new Date(date)
+  } else {
+    date = new Date()
+  }
   date.setHours(0, 0, 0, 0)
   return date
 }

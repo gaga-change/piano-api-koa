@@ -2,6 +2,7 @@
 const Course = require('./models/Course')
 const SpaceArea = require('./models/SpaceArea')
 const Controller = require('./Controller')
+const { initHour } = require('./tools')
 const code = require('./code')
 const mongoose = require('mongoose')
 
@@ -84,11 +85,11 @@ class CourseController extends Controller {
       const startSpace = await SpaceArea.findOne({
         ...person,
         endTime: new Date(startTime.getTime() - 60 * 1000),
-      },undefined, opt)
+      }, undefined, opt)
       const endSpace = await SpaceArea.findOne({
         ...person,
         startTime: new Date(endTime.getTime() + 60 * 1000),
-      },undefined, opt)
+      }, undefined, opt)
       let time = [startTime, endTime]
       if (startSpace) {
         time[0] = startSpace.startTime
@@ -123,12 +124,6 @@ class CourseController extends Controller {
     ctx.body = null
   }
 
-  async updateService(oldData, newData) {
-    const { id } = oldData
-    await this.destroyService(id)
-
-  }
-
   /** 更新 */
   async update(ctx) {
     const { id } = ctx.params;
@@ -138,6 +133,9 @@ class CourseController extends Controller {
     ctx.assert(item.startTime && item.endTime, 400, "请完善数据")
     if (model.startTime.getTime() === new Date(item.startTime).getTime()
       && model.endTime.getTime() === new Date(item.endTime).getTime()) {
+      await this.Model.updateOne({ _id: id }, item)
+    } else if (initHour(item.startTime) < initHour()) {
+      // 昨天之前的课程，包括昨天
       await this.Model.updateOne({ _id: id }, item)
     } else {
       const session = await mongoose.startSession();
