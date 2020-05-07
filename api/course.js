@@ -6,62 +6,65 @@ const { initHour } = require('./tools')
 const code = require('./code')
 const mongoose = require('mongoose')
 
+const { NO_SPACE_AREA } = require('./msg')
+
 
 class CourseController extends Controller {
   constructor(model) {
     super(model)
   }
 
-  async createService(body, session) {
+  async updateSpaceArea(item, opt = {}) {
     /*
-    新增课程后，对于的空闲时间 自动裁剪成两段（或一段 或无）
-    - 1. 查询对应的空闲时间。包含关系，只有一个。若无跳异常
-    - 2. 空闲开始 - (课程开始 - 1分钟)，（课程结束 + 1分钟） - 空闲结束
-    - 3. 拆成两段空闲时间，如果开始大于结束 则不创建
-    - 4. 删除旧的空闲时间
-    */
+新增课程后，对于的空闲时间 自动裁剪成两段（或一段 或无）
+- 1. 查询对应的空闲时间。包含关系，只有一个。若无跳异常
+- 2. 空闲开始 - (课程开始 - 1分钟)，（课程结束 + 1分钟） - 空闲结束
+- 3. 拆成两段空闲时间，如果开始大于结束 则不创建
+- 4. 删除旧的空闲时间
+*/
+    const { teacher, student } = item
+    const params = { startTime: { $lte: item.startTime }, endTime: { $gte: item.endTime } }
+    if (teacher) {
+      params.teacher = teacher
+    } else {
+      params.student = student
+    }
+    let spaceArea = await SpaceArea.findOne(params, undefined, opt)
+    if (!spaceArea) {
+      const err = new Error(NO_SPACE_AREA)
+      err.status = 400
+      err.expose = true
+      throw err
+    }
+    if (teacher) {
+      item.teacherSpaceRule = spaceArea.spaceRule
+    } else {
+      item.studentSpaceRule = spaceArea.spaceRule
+    }
+    {
+      let newSpaceArea = new SpaceArea({ ...spaceArea.toObject(), _id: undefined })
+      newSpaceArea.endTime = new Date(item.startTime.getTime() - 60 * 1000)
+      console.log(newSpaceArea)
+      if (newSpaceArea.endTime >= newSpaceArea.startTime) {
+        await newSpaceArea.save(opt)
+      }
+    }
+    {
+      let newSpaceArea = new SpaceArea({ ...spaceArea.toObject(), _id: undefined })
+      newSpaceArea.startTime = new Date(item.endTime.getTime() + 60 * 1000)
+      if (newSpaceArea.endTime >= newSpaceArea.startTime) {
+        await newSpaceArea.save(opt)
+      }
+    }
+    await SpaceArea.deleteOne({ _id: spaceArea.id }, opt)
+    // await spaceArea.remove()
+  }
+  async createService(body, session) {
     const opt = session ? { session } : {}
     let item = new this.Model(body)
-    const updateSpaceArea = async ({ teacher, student }) => {
-      const params = { startTime: { $lte: item.startTime }, endTime: { $gte: item.endTime } }
-      if (teacher) {
-        params.teacher = teacher
-      } else {
-        params.student = student
-      }
-      let spaceArea = await SpaceArea.findOne(params, undefined, opt)
-      // ctx.assert(spaceArea, 400, '没有对应的空闲时间')
-      if (!spaceArea) {
-        const err = new Error('没有对应的空闲时间')
-        err.status = 400
-        err.expose = true
-        throw err
-      }
-      if (teacher) {
-        item.teacherSpaceRule = spaceArea.spaceRule
-      } else {
-        item.studentSpaceRule = spaceArea.spaceRule
-      }
-      {
-        let newSpaceArea = new SpaceArea({ ...spaceArea.toObject(), _id: undefined })
-        newSpaceArea.endTime = new Date(item.startTime.getTime() - 60 * 1000)
-        console.log(newSpaceArea)
-        if (newSpaceArea.endTime >= newSpaceArea.startTime) {
-          await newSpaceArea.save(opt)
-        }
-      }
-      {
-        let newSpaceArea = new SpaceArea({ ...spaceArea.toObject(), _id: undefined })
-        newSpaceArea.startTime = new Date(item.endTime.getTime() + 60 * 1000)
-        if (newSpaceArea.endTime >= newSpaceArea.startTime) {
-          await newSpaceArea.save(opt)
-        }
-      }
-      await SpaceArea.deleteOne({ _id: spaceArea.id }, opt)
-      // await spaceArea.remove()
-    }
-    await updateSpaceArea({ teacher: item.teacher })
-    await updateSpaceArea({ student: item.student })
+
+    await this.updateSpaceArea({ ...item.toObject(), teacher: undefined }, opt)
+    await this.updateSpaceArea({ ...item.toObject(), student: undefined }, opt)
     return await item.save(opt)
   }
 

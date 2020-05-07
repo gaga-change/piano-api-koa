@@ -63,7 +63,7 @@ router.delete('/api/spaceRules/:id', checkAuth, spaceRuleController.destroy.bind
 router.put('/api/spaceRules/:id', checkAdmin, spaceRuleController.update.bind(spaceRuleController))
 router.get('/api/spaceRules/:id', spaceRuleController.show.bind(spaceRuleController))
 router.get('/api/spaceRules', spaceRuleController.index.bind(spaceRuleController))
-router.get('/api/spaceRulesUpdate', spaceRuleController.updateDB.bind(spaceRuleController))
+router.post('/api/spaceRulesUpdate', spaceRuleController.modify.bind(spaceRuleController))
 
 router.post('/api/students', checkAuth, studentController.create.bind(studentController))
 router.delete('/api/students/:id', checkAuth, studentController.destroy.bind(studentController))

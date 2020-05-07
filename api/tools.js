@@ -18,7 +18,7 @@ exports.initHour = initHour
 
 
 /** 拷贝时分 到另一个时间， 默认 秒和毫秒为0, 不改变目标本身 */
-const copyHour = (target, date)  => {
+const copyHour = (target, date) => {
   target = new Date(target)
   let hour = date.getHours()
   let min = date.getMinutes()
@@ -60,3 +60,9 @@ exports.accordWithRule = (startDateRule) => {
   return res
 }
 
+/** 返回有效时间范围，从当天开始，一直到最后一天的第二天, [start, end) */
+exports.getActivityArea = () => {
+  const start = initHour()
+  const end = new Date(start.getTime() + ONE_DAY_TIME * validNum)
+  return [start, end]
+}
