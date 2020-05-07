@@ -32,6 +32,21 @@ class SpaceRuleController extends Controller {
     super(model, { defaultSort: { startTime: 1 } })
   }
 
+  // 临时代码，数据库升级，舍弃周字段
+  async updateDB(ctx) {
+    let spaceRules = await SpaceRule.find({})
+    for (let i in spaceRules) {
+      let item = spaceRules[i]
+      let { week } = item.toObject()
+      if (week) {
+        item.setWeek(week)
+        item.week = undefined
+      }
+      await item.save()
+    }
+    ctx.body = await SpaceRule.find({})
+  }
+
   async create(ctx) {
     let item = ctx.request.body;
 
