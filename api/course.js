@@ -80,7 +80,7 @@ class CourseController extends Controller {
     const opt = session ? { session } : {}
     const course = await Course.findById(id, undefined, opt)
     const run = async (obj) => {
-      const { teacher, student, startTime, endTime, date } = obj
+      const { teacher, student, startTime, endTime } = obj
       const person = teacher ? { teacher } : { student }
       const startSpace = await SpaceArea.findOne({
         ...person,
@@ -101,7 +101,7 @@ class CourseController extends Controller {
         // await endSpace.remove()
         await SpaceArea.deleteOne({ _id: endSpace.id }, opt)
       }
-      const spaceArea = new SpaceArea({ ...person, startTime: time[0], endTime: time[1], date })
+      const spaceArea = new SpaceArea({ ...person, startTime: time[0], endTime: time[1] })
       if (teacher) {
         spaceArea.spaceRule = obj.teacherSpaceRule
       } else {
