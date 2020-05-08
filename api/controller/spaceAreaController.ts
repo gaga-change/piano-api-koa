@@ -14,7 +14,7 @@ class SpaceAreaController extends Controller<SpaceAreaDocument> {
   async autoCreateService() {
     let createNum = 0
     // await SpaceArea.deleteMany({})
-    const temp = await SpaceArea.findOne({}).sort({ date: -1 })
+    const temp = await SpaceArea.findOne({}).sort({ startTime: -1 })
     // 获取开始自动生成空闲时间的日期
 
     const days = validDays(temp ? (initHour(temp.startTime).getTime() + ONE_DAY_TIME) : new Date())
