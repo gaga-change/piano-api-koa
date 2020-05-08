@@ -1,5 +1,5 @@
 const axios = require('axios')
-const { getToken, TEACHER_TYPE, STUDENT_TYPE, getUserByTagName } = require('./tools/wxTools')
+const { getToken, TEACHER_TYPE, STUDENT_TYPE, getUserByTagName } = require('../tools/wxTools')
 
 exports.teacherRegisterSuccess = async (teacher) => {
   const token = await getToken(TEACHER_TYPE)

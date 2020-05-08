@@ -2,7 +2,7 @@
 
 
 const schedule = require('node-schedule');
-const spaceAreaController = require('../api/spaceArea')
+const spaceAreaController = require('../spaceArea')
 
 const scheduleCronstyle = () => {
   schedule.scheduleJob('0 0 1 * * *', async () => {

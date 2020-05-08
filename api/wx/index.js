@@ -1,6 +1,6 @@
 const code = require('../code')
 const axios = require('axios')
-const { isTeacher, getAppidAndsecret, isStudent, syncTags } = require('./tools/wxTools')
+const { isTeacher, getAppidAndsecret, isStudent, syncTags } = require('../tools/wxTools')
 
 module.exports = {
   /** 同步微信标签 */

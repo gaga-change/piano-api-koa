@@ -5,7 +5,7 @@ const koaBody = require('koa-body')
 const session = require('koa-session')
 const { PORT, MONGO_LINK } = require('./config')
 const scheduleCronstyle = require('./schedule')
-const api = require('./api')
+const api = require('./router')
 const app = new Koa()
 
 setImmediate(scheduleCronstyle)
@@ -39,7 +39,7 @@ app.use(api)
 //   ctx.body = '钢琴 - 接口'
 // })
 // 异常监听
-app.on('error', (err) => {
+app.on('error', (err: any) => {
   console.error(err)
 })
 
