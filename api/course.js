@@ -2,7 +2,7 @@
 const Course = require('./models/Course')
 const SpaceArea = require('./models/SpaceArea')
 const Controller = require('./Controller')
-const { initHour } = require('./tools')
+const { initHour } = require('./tools/dateTools')
 const code = require('./code')
 const mongoose = require('mongoose')
 

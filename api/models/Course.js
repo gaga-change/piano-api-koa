@@ -2,7 +2,7 @@
 
 const mongoose = require('mongoose')
 const { Schema } = mongoose
-const { initHour } = require('../tools')
+const { initHour } = require('../tools/dateTools')
 
 const schema = new Schema({
   startTime: { type: Date, }, // 开始时间

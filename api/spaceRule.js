@@ -6,7 +6,7 @@ const SpaceArea = require('./models/SpaceArea')
 const mongoose = require('mongoose')
 
 const courseController = require('./course')
-const { accordWithRule, copyHour, getActivityArea } = require('./tools')
+const { accordWithRule, copyHour, getActivityArea } = require('./tools/dateTools')
 const { NO_SPACE_AREA } = require('./msg')
 
 /** 自动新增空闲时间 */

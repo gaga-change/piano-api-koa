@@ -2,7 +2,7 @@
 const SpaceArea = require('./models/SpaceArea')
 const SpaceRule = require('./models/SpaceRule')
 const Controller = require('./Controller')
-const { validDays, initHour, ONE_DAY_TIME, copyHour } = require('./tools')
+const { validDays, initHour, ONE_DAY_TIME, copyHour } = require('./tools/dateTools')
 
 class SpaceAreaController extends Controller {
   constructor(model) {
