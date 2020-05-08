@@ -1,14 +1,14 @@
-const Koa = require('koa')
-const mongoose = require('mongoose')
-const logger = require('koa-logger')
-const koaBody = require('koa-body')
-const session = require('koa-session')
-const { PORT, MONGO_LINK } = require('./config')
-const scheduleCronstyle = require('./schedule')
-const api = require('./router')
+import Koa from 'koa'
+import mongoose from 'mongoose'
+import logger from 'koa-logger'
+import koaBody from 'koa-body'
+import session from 'koa-session'
+import  {PORT, MONGO_LINK} from './config'
+import schedule from './schedule'
+import api from './router'
 const app = new Koa()
 
-setImmediate(scheduleCronstyle)
+setImmediate(schedule)
 // MongoDB 连接
 mongoose.connect(MONGO_LINK, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false })
 const db = mongoose.connection
