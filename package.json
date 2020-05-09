@@ -4,10 +4,13 @@
   "description": "",
   "main": "api/index.ts",
   "scripts": {
-    "start": "node ."
+    "build": "tsc",
+    "server": "node dist/index.js",
+    "start": "tsc && node dist/index.js",
+    "watch-server": "nodemon --watch ./api/index.ts -e ts,tsx --exec ts-node ./api/index.ts",
+    "run": "ts-node ./api/index.ts"
   },
   "dependencies": {
-    "@types/koa": "^2.11.3",
     "axios": "^0.19.2",
     "koa": "^2.5.2",
     "koa-body": "^2.6.0",
@@ -22,6 +25,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/koa": "^2.11.3",
     "@types/koa-logger": "^3.1.1",
     "@types/koa-router": "^7.4.0",
     "@types/koa-session": "^5.10.2",
