@@ -39,6 +39,7 @@ router.delete('/api/courses/:id', checkAuth, courseController.destroy.bind(cours
 router.put('/api/courses/:id', checkAuth, courseController.update.bind(courseController))
 router.get('/api/courses/:id', courseController.show.bind(courseController))
 router.get('/api/courses', courseController.index.bind(courseController))
+router.get('/api/coursesActivateArea', courseController.findActivateCourse.bind(courseController))
 
 router.post('/api/leaveAreas', checkAuth, leaveAreaController.create.bind(leaveAreaController))
 router.delete('/api/leaveAreas/:id', checkAuth, leaveAreaController.destroy.bind(leaveAreaController))
@@ -53,6 +54,7 @@ router.get('/api/spaceAreas/:id', spaceAreaController.show.bind(spaceAreaControl
 router.get('/api/spaceAreas', spaceAreaController.index.bind(spaceAreaController))
 router.get('/api/spaceAreasAutoCreate', checkAuth, spaceAreaController.autoCreate.bind(spaceAreaController))
 router.post('/api/spaceAreasClearNoTeacherOrStudent',checkAuth, spaceAreaController.clearDiscardDoc.bind(spaceAreaController))
+router.get('/api/spaceAreaActivateArea',checkAuth, spaceAreaController.findByActivateArea.bind(spaceAreaController))
 
 router.post('/api/spaceRules', checkAuth, spaceRuleController.create.bind(spaceRuleController))
 router.delete('/api/spaceRules/:id', checkAuth, spaceRuleController.destroy.bind(spaceRuleController))

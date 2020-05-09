@@ -64,6 +64,16 @@ class CourseController extends Controller<CourseDocument> {
     return await item.save({session})
   }
 
+  /**
+   * 获取当前周期内的 所有课程
+   * @param ctx
+   */
+  async findActivateCourse(ctx: Context) {
+    const {teacher, student} = ctx.query
+    ctx.assert(teacher || student, 400, '参数异常')
+    ctx.body = await Course.findByActivateArea({teacher, student})
+  }
+
   /** 创建 */
   async create(ctx: Context) {
     const body = ctx.request.body

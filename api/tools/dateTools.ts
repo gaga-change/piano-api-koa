@@ -58,7 +58,7 @@ export const accordWithRule = (startDateRule: Date) : Array<Date> => {
 }
 
 /** 返回有效时间范围，从当天开始，一直到最后一天的第二天, [start, end) */
-export const getActivityArea = () => {
+export const getActivityArea = ():[Date, Date] => {
   const start = initHour()
   const end = new Date(start.getTime() + ONE_DAY_TIME * validNum)
   return [start, end]

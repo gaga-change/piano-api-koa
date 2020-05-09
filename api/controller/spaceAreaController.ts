@@ -11,6 +11,16 @@ class SpaceAreaController extends Controller<SpaceAreaDocument> {
   }
 
   /**
+   * 获取周期内的空闲时间
+   * @param ctx
+   */
+  async findByActivateArea(ctx: Context) {
+    const {teacher, student} = ctx.query
+    ctx.assert(teacher || student, 400, '参数有误')
+    ctx.body = await SpaceArea.findByActivateArea({teacher, student})
+  }
+
+  /**
    * 清理 主文档被删除的文档
    * @param ctx
    */
@@ -21,7 +31,7 @@ class SpaceAreaController extends Controller<SpaceAreaDocument> {
   /** 自动创建空闲时间，返回创建数量 */
   async autoCreateService() {
     let createNum = 0
-    await SpaceArea.deleteMany({})
+    // await SpaceArea.deleteMany({})
     const temp = await SpaceArea.findOne({}).sort({ startTime: -1 })
     // 获取开始自动生成空闲时间的日期
 

@@ -5,7 +5,8 @@ import {initHour} from '../tools/dateTools'
 import {TeacherDocument} from "./Teacher";
 import {StudentDocument} from "./Student";
 import {SpaceRuleDocument} from "./SpaceRule";
-import {removeNoTeacherOrStudent} from "../tools/aggregateConfig";
+import {findByActivateArea, FindByActivateAreaOptions, removeNoTeacherOrStudent} from "../tools/aggregateConfig";
+import {CourseDocument} from "./Course";
 
 export  interface SpaceAreaDocument extends  Document{
   startTime: Date
@@ -38,11 +39,19 @@ schema.static({
    */
   async removeNoTeacherOrStudent(this: Model<SpaceAreaDocument>): Promise<{ idNum: number, docNum: number }> {
     return await removeNoTeacherOrStudent(this)
+  },
+  /**
+   * 获取有效范围内的 空闲时间
+   * @param options
+   */
+  async findByActivateArea(this: Model<SpaceAreaDocument>, options: FindByActivateAreaOptions) {
+    return findByActivateArea(this, options)
   }
 })
 
 interface SpaceAreaModel extends Model<SpaceAreaDocument>{
   removeNoTeacherOrStudent():Promise<void>
+  findByActivateArea(options: FindByActivateAreaOptions): Promise<Array<CourseDocument>>
 }
 
 export default <SpaceAreaModel>mongoose.model<SpaceAreaDocument>('SpaceArea', schema, 'piano_space_area');
