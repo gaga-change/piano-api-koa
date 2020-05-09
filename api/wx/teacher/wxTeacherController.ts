@@ -18,8 +18,10 @@ const register = async (ctx: Context) => {
     teacher = new Teacher(body)
     await teacher.save()
   }
-  setImmediate(() => {
-    teacher && informTeacherRegister(teacher)
+  setImmediate(async () => {
+    if (teacher) {
+      await informTeacherRegister(teacher)
+    }
   })
   ctx.body = teacher
 }

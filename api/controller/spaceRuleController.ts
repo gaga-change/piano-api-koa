@@ -99,8 +99,8 @@ class SpaceRuleController extends Controller<SpaceRuleDocument> {
 
     item = new this.Model(item);
     ctx.body = await item.save()
-    setImmediate(() => {
-      setSpaceArea(item)
+    setImmediate( async () => {
+      await setSpaceArea(item)
     })
   }
 
@@ -108,8 +108,8 @@ class SpaceRuleController extends Controller<SpaceRuleDocument> {
     const { id } = ctx.params;
 
     await this.Model.deleteOne({ _id: id })
-    setImmediate(() => {
-      delSpaceArea(id)
+    setImmediate(async () => {
+      await delSpaceArea(id)
     })
     ctx.body = null
   }

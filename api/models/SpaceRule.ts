@@ -9,8 +9,8 @@ export interface SpaceRuleDocument extends  Document {
   setWeek(week: number):SpaceRuleDocument;
   startTime: Date
   endTime: Date
-  teacher?: Schema.Types.ObjectId | TeacherDocument
-  student?: Schema.Types.ObjectId | StudentDocument
+  teacher?: Schema.Types.ObjectId | TeacherDocument | string
+  student?: Schema.Types.ObjectId | StudentDocument | string
   remark?: string
 }
 
