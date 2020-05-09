@@ -12,6 +12,7 @@ setImmediate(schedule)
 // MongoDB 连接
 mongoose.connect(MONGO_LINK, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false })
 const db = mongoose.connection
+
 // Session 配置参数
 const CONFIG = {
   httpOnly: true,

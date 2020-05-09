@@ -51,14 +51,16 @@ router.delete('/api/spaceAreas/:id', checkAuth, spaceAreaController.destroy.bind
 router.put('/api/spaceAreas/:id', checkAuth, spaceAreaController.update.bind(spaceAreaController))
 router.get('/api/spaceAreas/:id', spaceAreaController.show.bind(spaceAreaController))
 router.get('/api/spaceAreas', spaceAreaController.index.bind(spaceAreaController))
-router.get('/api/spaceAreasAutoCreate', spaceAreaController.autoCreate.bind(spaceAreaController))
+router.get('/api/spaceAreasAutoCreate', checkAuth, spaceAreaController.autoCreate.bind(spaceAreaController))
+router.post('/api/spaceAreasClearNoTeacherOrStudent',checkAuth, spaceAreaController.clearDiscardDoc.bind(spaceAreaController))
 
 router.post('/api/spaceRules', checkAuth, spaceRuleController.create.bind(spaceRuleController))
 router.delete('/api/spaceRules/:id', checkAuth, spaceRuleController.destroy.bind(spaceRuleController))
 router.put('/api/spaceRules/:id', checkAdmin, spaceRuleController.update.bind(spaceRuleController))
 router.get('/api/spaceRules/:id', spaceRuleController.show.bind(spaceRuleController))
 router.get('/api/spaceRules', spaceRuleController.index.bind(spaceRuleController))
-router.post('/api/spaceRulesUpdate', spaceRuleController.modify.bind(spaceRuleController))
+router.post('/api/spaceRulesUpdate', checkAuth, spaceRuleController.modify.bind(spaceRuleController))
+router.post('/api/spaceRulesClearNoTeacherOrStudent', checkAuth, spaceRuleController.clearDiscardDoc.bind(spaceRuleController))
 
 router.post('/api/students', checkAuth, studentController.create.bind(studentController))
 router.delete('/api/students/:id', checkAuth, studentController.destroy.bind(studentController))

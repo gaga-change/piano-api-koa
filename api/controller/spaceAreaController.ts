@@ -10,10 +10,18 @@ class SpaceAreaController extends Controller<SpaceAreaDocument> {
     super(model)
   }
 
+  /**
+   * 清理 主文档被删除的文档
+   * @param ctx
+   */
+  async clearDiscardDoc(ctx: Context) {
+    ctx.body = await SpaceArea.removeNoTeacherOrStudent()
+  }
+
   /** 自动创建空闲时间，返回创建数量 */
   async autoCreateService() {
     let createNum = 0
-    // await SpaceArea.deleteMany({})
+    await SpaceArea.deleteMany({})
     const temp = await SpaceArea.findOne({}).sort({ startTime: -1 })
     // 获取开始自动生成空闲时间的日期
 

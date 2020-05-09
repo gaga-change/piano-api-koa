@@ -1,6 +1,7 @@
 // 清单
 
 import mongoose, {Document, Schema} from 'mongoose';
+import {STUDENT_DB_NAME} from "../config/dbName";
 
 export interface StudentDocument extends Document{
   name: string,
@@ -22,4 +23,4 @@ const schema = new Schema({
   timestamps: true,
 })
 
-export default mongoose.model<StudentDocument>('Student', schema, 'piano_student');
+export default mongoose.model<StudentDocument>('Student', schema, STUDENT_DB_NAME);

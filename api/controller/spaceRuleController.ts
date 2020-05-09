@@ -36,6 +36,14 @@ class SpaceRuleController extends Controller<SpaceRuleDocument> {
   }
 
 
+  /**
+   * 清理 主文档被删除的文档
+   * @param ctx
+   */
+  async clearDiscardDoc(ctx: Context) {
+    ctx.body = await SpaceRule.removeNoTeacherOrStudent()
+  }
+
   /** 批量修改 */
   async modify(ctx: Context) {
     console.log(ctx.request.body)

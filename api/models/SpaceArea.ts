@@ -1,10 +1,11 @@
 // 清单
 
-import mongoose, {Schema, Document} from 'mongoose'
+import mongoose, {Schema, Document, Model} from 'mongoose'
 import {initHour} from '../tools/dateTools'
 import {TeacherDocument} from "./Teacher";
 import {StudentDocument} from "./Student";
 import {SpaceRuleDocument} from "./SpaceRule";
+import {removeNoTeacherOrStudent} from "../tools/aggregateConfig";
 
 export  interface SpaceAreaDocument extends  Document{
   startTime: Date
@@ -31,4 +32,17 @@ schema.virtual('date').get(function (this: SpaceAreaDocument) {
   return initHour(this.startTime)
 })
 
-export default mongoose.model<SpaceAreaDocument>('SpaceArea', schema, 'piano_space_area');
+schema.static({
+  /**
+   * 删除老师或学生已被删除的数据
+   */
+  async removeNoTeacherOrStudent(this: Model<SpaceAreaDocument>): Promise<{ idNum: number, docNum: number }> {
+    return await removeNoTeacherOrStudent(this)
+  }
+})
+
+interface SpaceAreaModel extends Model<SpaceAreaDocument>{
+  removeNoTeacherOrStudent():Promise<void>
+}
+
+export default <SpaceAreaModel>mongoose.model<SpaceAreaDocument>('SpaceArea', schema, 'piano_space_area');
