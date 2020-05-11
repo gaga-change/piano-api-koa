@@ -11,13 +11,13 @@ const scheduleControl = async () => {
     schedule.scheduleJob('0 30 0 * * *', async () => {
       // 清理节点
       await NodeModel.deleteMany({})
-      console.log('清理节点')
+      console.log('清理节点', new Date().toLocaleString())
     })
 
     schedule.scheduleJob('0 31 0 * * *', async () => {
       // 创建节点
       await NodeModel.create({name: HOSTNAME})
-      console.log('创建节点')
+      console.log('创建节点', new Date().toLocaleString())
     })
 
     schedule.scheduleJob('0 0 1 * * *', async () => {
