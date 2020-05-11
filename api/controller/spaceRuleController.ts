@@ -2,11 +2,10 @@ import {Context} from "koa";
 import SpaceArea from "../models/SpaceArea";
 import {accordWithRule, copyHour, getActivityArea} from "../tools/dateTools";
 import Controller from "../tools/Controller";
-import * as mongoose from "mongoose";
 import Course from "../models/Course";
 import {NO_SPACE_AREA} from "../config/msg";
 import SpaceRule, {SpaceRuleDocument} from "../models/SpaceRule";
-import {ClientSession, Model} from "mongoose";
+import mongoose, {ClientSession, Model} from "mongoose";
 import courseController from "./courseController";
 
 /** 自动新增空闲时间 */
@@ -54,6 +53,7 @@ class SpaceRuleController extends Controller<SpaceRuleDocument> {
         setSpaceArea(item)
       }
     } else { // 有删除，有新增
+      console.log(typeof mongoose.startSession)
       const session: ClientSession = await mongoose.startSession();
       session.startTransaction();
       try {

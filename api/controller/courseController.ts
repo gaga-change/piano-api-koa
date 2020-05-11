@@ -1,9 +1,8 @@
-import {Model} from "mongoose";
+import mongoose, {Model} from "mongoose";
 import Controller from "../tools/Controller";
 import SpaceArea from "../models/SpaceArea";
 import {Context} from "koa";
 import Course, {CourseDocument} from "../models/Course";
-import * as mongoose from "mongoose";
 import {initHour} from "../tools/dateTools";
 import {NO_SPACE_AREA} from "../config/msg";
 import ThrowError from "../tools/ThrowError";

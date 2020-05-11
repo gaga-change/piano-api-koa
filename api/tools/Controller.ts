@@ -59,7 +59,6 @@ class Controller<T extends Document> {
         params[key] = new RegExp(params[key], 'i')
       }
     })
-    console.log((this.defaultSort), '##')
     const res1 = this.Model.find(params)
       .sort(this.defaultSort)
       .limit(pageSize)
