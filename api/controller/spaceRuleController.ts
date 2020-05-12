@@ -50,7 +50,7 @@ class SpaceRuleController extends Controller<SpaceRuleDocument> {
     if (delIds.length === 0) { // 只有新增的，没有删除
       for (let i in addItems) {
         const item = await SpaceRule.create(addItems[i])
-        setSpaceArea(item)
+        await setSpaceArea(item)
       }
     } else { // 有删除，有新增
       console.log(typeof mongoose.startSession)
@@ -66,15 +66,16 @@ class SpaceRuleController extends Controller<SpaceRuleDocument> {
           const item = await new SpaceRule(addItems[i]).save({ session })
           await setSpaceArea(item, { session })
         }
-        // 获取本人失效内所有课程
+        // 获取本人 生效的&被删除空闲规则的 课程
         {
           const { teacher, student } = addItems[0]
-          const params = teacher ? { teacher } : { student }
+          const params = teacher ? { teacher, teacherSpaceRule: {$in: delIds} } : { student, studentSpaceRule: {$in: delIds} }
           const activityArea = getActivityArea()
-          const courses = await Course.find({ ...params, startTime: { $gte: activityArea[0], $lt: activityArea[1] } }, undefined, { session })
+          const courses = await Course.find({ ...params, startTime: { $gte: activityArea[0], $lt: activityArea[1] },  }, undefined, { session })
           for (let i = 0; i<courses.length; i ++) {
             let course = courses[i]
             await courseController.updateSpaceArea(course, !!teacher, session )
+            await course.save() // 有修改对应绑定的规则，需要重新保存
           }
         }
         await session.commitTransaction()
