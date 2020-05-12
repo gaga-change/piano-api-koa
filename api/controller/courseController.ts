@@ -1,66 +1,13 @@
-import mongoose, {Model} from "mongoose";
+import {Model} from "mongoose";
 import Controller from "../tools/Controller";
 import SpaceArea from "../models/SpaceArea";
 import {Context} from "koa";
 import Course, {CourseDocument} from "../models/Course";
-import {initHour} from "../tools/dateTools";
-import {NO_SPACE_AREA} from "../config/msg";
-import ThrowError from "../tools/ThrowError";
+import {getActivityArea, isOldDate} from "../tools/dateTools";
 
 class CourseController extends Controller<CourseDocument> {
   constructor(model: Model<CourseDocument>) {
     super(model)
-  }
-
-  async updateSpaceArea(item: CourseDocument, isTeacher: boolean, session?: any) {
-    /*
-新增课程后，对于的空闲时间 自动裁剪成两段（或一段 或无）
-- 1. 查询对应的空闲时间。包含关系，只有一个。若无跳异常
-- 2. 空闲开始 - (课程开始 - 1分钟)，（课程结束 + 1分钟） - 空闲结束
-- 3. 拆成两段空闲时间，如果开始大于结束 则不创建
-- 4. 删除旧的空闲时间
-*/
-    const opt  = session ? {session} : {}
-    const { teacher, student } = item
-    const params = { startTime: { $lte: item.startTime }, endTime: { $gte: item.endTime }, teacher, student}
-    if (isTeacher) {
-      delete params.student
-    } else {
-      delete params.teacher
-    }
-    let spaceArea = await SpaceArea.findOne(params, undefined, opt)
-    if (!spaceArea) {
-      throw new ThrowError(NO_SPACE_AREA)
-    }
-    if (teacher) {
-      item.teacherSpaceRule = spaceArea.spaceRule
-    } else {
-      item.studentSpaceRule = spaceArea.spaceRule
-    }
-    {
-      let newSpaceArea = new SpaceArea({ ...spaceArea.toObject(), _id: undefined })
-      newSpaceArea.endTime = new Date(item.startTime.getTime() - 60 * 1000)
-      console.log(newSpaceArea)
-      if (newSpaceArea.endTime >= newSpaceArea.startTime) {
-        await newSpaceArea.save(opt)
-      }
-    }
-    {
-      let newSpaceArea = new SpaceArea({ ...spaceArea.toObject(), _id: undefined })
-      newSpaceArea.startTime = new Date(item.endTime.getTime() + 60 * 1000)
-      if (newSpaceArea.endTime >= newSpaceArea.startTime) {
-        await newSpaceArea.save(opt)
-      }
-    }
-    await SpaceArea.deleteOne({ _id: spaceArea.id }, opt)
-    // await spaceArea.remove()
-  }
-  async createService(body: any, session?:any) {
-    let item = new this.Model(body)
-
-    await this.updateSpaceArea(item, true , session)
-    await this.updateSpaceArea(item, false, session)
-    return await item.save({session})
   }
 
   /**
@@ -76,102 +23,97 @@ class CourseController extends Controller<CourseDocument> {
   /** 创建 */
   async create(ctx: Context) {
     const body = ctx.request.body
-    ctx.body = await this.createService(body)
-  }
+    const {session} = ctx.state
+    ctx.assert(session, 500, 'no session')
+    ctx.assert(body.teacher && body.student, 400, '参数异常')
+    const activityArea = getActivityArea()
+    // 判断是否超出有效期的，超出不予创建
+    ctx.assert(body.startTime && new Date(body.startTime) < activityArea[1], 400, '开始时间不能超过有效期')
+    if (isOldDate(body.startTime)) { // 创建旧的 直接通过
+      ctx.body = await Course.create(body, {session})
+    } else { // 有效期内的
+      // 裁剪空闲时间, 返回时间规则 绑定到 课程
+      body.teacherSpaceRule = await SpaceArea.cropArea({
+        startTime: body.startTime,
+        endTime: body.endTime,
+        teacher: body.teacher,
+        session
+      })
+      body.studentSpaceRule = await SpaceArea.cropArea({
+        startTime: body.startTime,
+        endTime: body.endTime,
+        student: body.student,
+        session
+      })
+      ctx.body = await new Course(body).save()
+    }
 
-  async destroyService(id: String, session?: any) {
-    /*
-     查找前后是否有相连的 空闲时间
-     合并成一个
-     删除前后空闲时间，以及 当前课程
-   */
-    const opt = session ? { session } : {}
-    const course = await Course.findById(id, undefined, opt)
-    if (!course) {
-      throw Error('课程已被删除')
-    }
-    const run = async (obj: CourseDocument, isTeacher: boolean) => {
-      const { teacher, student, startTime, endTime } = obj
-      const person = isTeacher ? { teacher } : { student }
-      const startSpace = await SpaceArea.findOne({
-        ...person,
-        endTime: new Date(startTime.getTime() - 60 * 1000),
-      }, undefined, opt)
-      const endSpace = await SpaceArea.findOne({
-        ...person,
-        startTime: new Date(endTime.getTime() + 60 * 1000),
-      }, undefined, opt)
-      let time = [startTime, endTime]
-      if (startSpace) {
-        time[0] = startSpace.startTime
-        await SpaceArea.deleteOne({ _id: startSpace.id }, opt)
-      }
-      if (endSpace) {
-        time[1] = endSpace.endTime
-        // await endSpace.remove()
-        await SpaceArea.deleteOne({ _id: endSpace.id }, opt)
-      }
-      const spaceArea = new SpaceArea({ ...person, startTime: time[0], endTime: time[1] })
-      if (teacher) {
-        spaceArea.spaceRule = obj.teacherSpaceRule
-      } else {
-        spaceArea.spaceRule = obj.studentSpaceRule
-      }
-      await spaceArea.save(opt)
-    }
-    await run({ ...course.toObject()}, true)
-    await run({ ...course.toObject()}, false)
-    await Course.deleteOne({ _id: course.id }, opt)
-    // await course.remove()
   }
 
   /** 删除 */
   async destroy(ctx: Context) {
-    const { id } = ctx.params;
-
-    await this.destroyService(id)
-    // await this.Model.deleteOne({ _id: id })
+    const {id} = ctx.params;
+    const {session} = ctx.state
+    ctx.assert(session, 500, 'no session')
+    const course = await Course.findById(id, undefined, {session}).populate('teacher').populate('student')
+    ctx.assert(course, 400, '课程已被删除')
+    if (isOldDate(course.startTime) || (!course.student && !course.teacher)) { // 过期、没有老师和学生 直接删除
+      await Course.deleteOne({_id: id}, {session})
+    } else {
+      const {startTime, endTime, student, teacher, teacherSpaceRule, studentSpaceRule} = course
+      teacher && await SpaceArea.joinArea({startTime, endTime, teacher, spaceRule: teacherSpaceRule, session})
+      student && await SpaceArea.joinArea({startTime, endTime, student, spaceRule: studentSpaceRule, session})
+      await Course.deleteOne({_id: id}, {session})
+    }
     ctx.body = null
   }
 
   /** 更新 */
   async update(ctx: Context) {
-    const { id } = ctx.params;
+    const {id} = ctx.params;
     const item = ctx.request.body;
-    const model = await this.Model.findById(id)
-    if (!model) throw new ThrowError("数据已被删除")
+    const {session} = ctx.state
+    ctx.assert(session, 500, 'no session')
+    const course = await Course.findById(id, undefined, {session})
+    ctx.assert(course, 400, '课程已被删除')
     ctx.assert(item.startTime && item.endTime, 400, "请完善数据")
-    if (model.startTime.getTime() === new Date(item.startTime).getTime()
-      && model.endTime.getTime() === new Date(item.endTime).getTime()) {
-      await this.Model.updateOne({ _id: id }, item)
-    } else if (initHour(item.startTime) < initHour()) {
-      // 昨天之前的课程，包括昨天
-      await this.Model.updateOne({ _id: id }, item)
+    const activityArea = getActivityArea()
+    // 判断是否超出有效期的，超出不予创建
+    ctx.assert(item.startTime && new Date(item.startTime) < activityArea[1], 400, '开始时间不能超过有效期')
+    if (course.startTime.getTime() === new Date(item.startTime).getTime()
+      && course.endTime.getTime() === new Date(item.endTime).getTime()) { // 时间未改动，正常更新其他字段
+      await this.Model.updateOne({_id: id}, item, {session})
     } else {
-      const session = await mongoose.startSession();
-      session.startTransaction();
-      try {
-        await this.destroyService(id, session)
-        item._id = id
-        await this.createService(item, session)
-        await session.commitTransaction()
-        session.endSession()
-      } catch (error) {
-        await session.abortTransaction();
-        session.endSession()
-        error.status = 400
-        error.expose = true
-        throw error
+      // 如果有效期内的 还原空闲时间
+      if (!isOldDate(course.startTime)) {
+        const {startTime, endTime, student, teacher, teacherSpaceRule, studentSpaceRule} = course
+        teacher && await SpaceArea.joinArea({startTime, endTime, teacher, spaceRule: teacherSpaceRule, session})
+        student && await SpaceArea.joinArea({startTime, endTime, student, spaceRule: studentSpaceRule, session})
       }
+      if (!isOldDate(item.startTime)) { // 新建的是在有效期内的，裁剪空闲时间
+        item.teacherSpaceRule = await SpaceArea.cropArea({
+          startTime: item.startTime,
+          endTime: item.endTime,
+          teacher: item.teacher,
+          session
+        })
+        item.studentSpaceRule = await SpaceArea.cropArea({
+          startTime: item.startTime,
+          endTime: item.endTime,
+          student: item.student,
+          session
+        })
+      }
+      // 保存
+      await course.updateOne(item, {session})
     }
     ctx.body = null
   }
 
-
   async index(ctx: Context) {
     const pageSize = Number(ctx.query.pageSize) || 20
     const page = Number(ctx.query.pageNum) || 1
-    const params = { ...ctx.query }
+    const params = {...ctx.query}
     delete params.pageSize
     delete params.pageNum
     Object.keys(params).forEach(key => {
@@ -182,8 +124,8 @@ class CourseController extends Controller<CourseDocument> {
     const res1 = Course.find(params)
       .sort(this.defaultSort)
       .limit(pageSize)
-      .populate({ path: 'teacher', select: 'name' })
-      .populate({ path: 'student', select: 'name' })
+      .populate({path: 'teacher', select: 'name'})
+      .populate({path: 'student', select: 'name'})
       .skip((page - 1) * pageSize)
     const res2 = this.Model.countDocuments(params)
     ctx.body = {

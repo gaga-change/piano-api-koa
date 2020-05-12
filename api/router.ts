@@ -12,6 +12,7 @@ import teacherController from './controller/teacherController';
 import wxController from './wx/wxController';
 import wxTeacherController from './wx/teacher/wxTeacherController';
 import wxStudentController from './wx/student/wxStudentController';
+import {mongoSession} from "./middleware/mongoSession";
 
 const checkAuth = auth.checkAuth.bind(auth)
 const checkAdmin = auth.checkAdmin.bind(auth)
@@ -34,9 +35,9 @@ router.get('/api/enums/:id', enumController.show.bind(enumController))
 router.get('/api/enums', enumController.index.bind(enumController))
 router.get('/api/enumsTotal', enumController.total.bind(enumController))
 
-router.post('/api/courses', checkAuth, courseController.create.bind(courseController))
-router.delete('/api/courses/:id', checkAuth, courseController.destroy.bind(courseController))
-router.put('/api/courses/:id', checkAuth, courseController.update.bind(courseController))
+router.post('/api/courses', checkAuth, mongoSession ,courseController.create.bind(courseController))
+router.delete('/api/courses/:id', checkAuth, mongoSession, courseController.destroy.bind(courseController))
+router.put('/api/courses/:id', checkAuth, mongoSession, courseController.update.bind(courseController))
 router.get('/api/courses/:id', courseController.show.bind(courseController))
 router.get('/api/courses', courseController.index.bind(courseController))
 router.get('/api/coursesActivateArea', courseController.findActivateCourse.bind(courseController))
@@ -61,7 +62,7 @@ router.delete('/api/spaceRules/:id', checkAuth, spaceRuleController.destroy.bind
 router.put('/api/spaceRules/:id', checkAdmin, spaceRuleController.update.bind(spaceRuleController))
 router.get('/api/spaceRules/:id', spaceRuleController.show.bind(spaceRuleController))
 router.get('/api/spaceRules', spaceRuleController.index.bind(spaceRuleController))
-router.post('/api/spaceRulesUpdate', checkAuth, spaceRuleController.modify.bind(spaceRuleController))
+router.post('/api/spaceRulesUpdate', checkAuth, mongoSession, spaceRuleController.modify.bind(spaceRuleController))
 router.post('/api/spaceRulesClearNoTeacherOrStudent', checkAuth, spaceRuleController.clearDiscardDoc.bind(spaceRuleController))
 
 router.post('/api/students', checkAuth, studentController.create.bind(studentController))

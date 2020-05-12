@@ -10,10 +10,10 @@ import {findByActivateArea, FindByActivateAreaOptions} from "../tools/aggregateC
 export interface CourseDocument extends Document {
   startTime: Date
   endTime: Date
-  teacher: Schema.Types.ObjectId | TeacherDocument | string
-  student: Schema.Types.ObjectId | StudentDocument | string
-  teacherSpaceRule: Schema.Types.ObjectId | SpaceRuleDocument | string
-  studentSpaceRule: Schema.Types.ObjectId | SpaceRuleDocument | string
+  teacher?: Schema.Types.ObjectId | TeacherDocument | string
+  student?: Schema.Types.ObjectId | StudentDocument | string
+  teacherSpaceRule?: Schema.Types.ObjectId | SpaceRuleDocument | string
+  studentSpaceRule?: Schema.Types.ObjectId | SpaceRuleDocument | string
   teacherTag?: number
   studentTag?: number
   status: number

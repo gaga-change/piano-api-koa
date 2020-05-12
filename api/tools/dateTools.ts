@@ -63,3 +63,12 @@ export const getActivityArea = ():[Date, Date] => {
   const end = new Date(start.getTime() + ONE_DAY_TIME * validNum)
   return [start, end]
 }
+
+/**
+ * 时间已过期，非当天
+ * @param time
+ */
+export const isOldDate = (time: Date|string) : boolean => {
+  time = new Date(time)
+  return time < initHour()
+}
