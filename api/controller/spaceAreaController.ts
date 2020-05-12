@@ -49,7 +49,7 @@ class SpaceAreaController extends Controller<SpaceAreaDocument> {
       }
     }
     // 清除失效的空闲时间
-    await SpaceArea.deleteMany({ date: { $lt: initHour(new Date()) } })
+    await SpaceArea.deleteMany({ startTime: { $lt: initHour(new Date()) } })
     return createNum
   }
 
