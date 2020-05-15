@@ -2,6 +2,8 @@ import {Context, Next} from "koa";
 import {getAppidAndsecret, isStudent, isTeacher, syncTags} from "../tools/wxTools";
 import code from "../config/code";
 import axios from 'axios'
+import Teacher, {TeacherDocument} from "../models/Teacher";
+import Student, {StudentDocument} from "../models/Student";
 
 
 export default  {
@@ -36,15 +38,18 @@ export default  {
       ctx.status = code.BadRequest
       ctx.body = res.data
     } else {
+      let userInfo: TeacherDocument | StudentDocument = null
       if (isTeacher(type)) {
         ctx.session.teacherOpenid = res.data.openid
+        userInfo = await Teacher.findOne({openid: res.data.openid})
       } else {
-        // @ts-ignore
         ctx.session.studentOpenid = res.data.openid
+        userInfo = await Student.findOne({openid: res.data.openid})
       }
       ctx.body = {
         teacherOpenid: ctx.session && ctx.session.teacherOpenid,
         studentOpenid: ctx.session && ctx.session.studentOpenid,
+        userInfo
       }
     }
   },
@@ -53,6 +58,7 @@ export default  {
     ctx.body = {
       teacherOpenid: ctx.session && ctx.session.teacherOpenid,
       studentOpenid: ctx.session && ctx.session.studentOpenid,
+      userInfo: ctx.session && ctx.session.userInfo
     }
   },
   /** 微信登录校验 */
