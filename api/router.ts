@@ -1,18 +1,21 @@
-import Router from 'koa-router'
-const router = new Router()
+import * as controllers from "./controller"
 
+import Router from 'koa-router'
 import auth from './controller/authController';
-import enumController from './controller/enumController';
 import courseController from './controller/courseController';
+import enumController from './controller/enumController';
 import leaveAreaController from './controller/leaveAreaController';
+import {mongoSession} from "./middleware/mongoSession";
+import {routerMap} from "./desc";
 import spaceAreaController from './controller/spaceAreaController';
 import spaceRuleController from './controller/spaceRuleController';
 import studentController from './controller/studentController';
 import teacherController from './controller/teacherController';
 import wxController from './wx/wxController';
-import wxTeacherController from './wx/teacher/wxTeacherController';
 import wxStudentController from './wx/student/wxStudentController';
-import {mongoSession} from "./middleware/mongoSession";
+import wxTeacherController from './wx/teacher/wxTeacherController';
+
+const router = new Router()
 
 const checkAuth = auth.checkAuth.bind(auth)
 const checkAdmin = auth.checkAdmin.bind(auth)
@@ -76,5 +79,11 @@ router.delete('/api/teachers/:id', checkAuth, teacherController.destroy.bind(tea
 router.put('/api/teachers/:id', checkAuth, teacherController.update.bind(teacherController))
 router.get('/api/teachers/:id', teacherController.show.bind(teacherController))
 router.get('/api/teachers', teacherController.index.bind(teacherController))
+
+console.log(controllers)
+routerMap.forEach(({method, path, fun}) => {
+  console.log('register: ', path, method)
+  router.register(path, [method], fun)
+})
 
 export default router.routes()
