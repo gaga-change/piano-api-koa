@@ -1,11 +1,16 @@
 import { Controller, GetMapping } from "../desc";
 
-import { Context } from "vm";
+import {Context} from "koa";
+import Teacher from "../models/Teacher";
+import Student from "../models/Student";
 
-@Controller('/dashboard')
+@Controller('dashboard')
 export class DashboardController {
   @GetMapping("readyDataNum")
   async home(ctx: Context) {
-    ctx.body = "gaga"
+    ctx.body = {
+      teacherReadyNum: await Teacher.countDocuments({status: 0}),
+      studentReadyNum: await Student.countDocuments({status: 0}),
+    }
   }
 }

@@ -1,14 +1,17 @@
 import 'reflect-metadata'
 
 import Router from "koa-router";
-import {join}  from 'path'
+import * as nodePath from 'path'
+import Application from "koa";
 
-// const basePathKey = Symbol.for('BASE_PATH')
-const basePathKey = 'BASE_PATH'
+const basePathKey = Symbol.for('BASE_PATH')
 interface test {
   method: string,
-  path: string,
-  fun: Array<Router.IMiddleware>
+  path: Function,
+  middleware:  Array<Router.IMiddleware>
+}
+interface middleware {
+  (ctx: Application.Context, next: Application.Next):Promise<void>
 }
 
 export const routerMap: Array<test> = []
@@ -16,38 +19,32 @@ export const routerMap: Array<test> = []
 
 export function Controller(path?: string) {
   return function (target: any) {
-    // target.prototype._basePath = path || '/'
     Reflect.defineMetadata(basePathKey, path || '/', target.prototype)
-    console.log('喵喵喵', target, target.prototype)
-    console.log('喵喵喵 end')
-    // console.log("hello(): 执行.", target, propertyKey, descriptor);
   }
 }
 
-export function RequestMapping(method: string, path: string) {
-  console.log("hello(): 加载.", method, path);
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    // map[path] = target[propertyKey]
-    // routerMap.push({ method, path: join(target._basePath, path), fun: [target[propertyKey].bind(target)] })
-    console.log('???', Reflect.getMetadata(basePathKey, target), target[basePathKey])
-    routerMap.push({ method, path, fun: [target[propertyKey].bind(target)] })
-    console.log("hello(): 执行.", target, propertyKey, descriptor);
+export function RequestMapping(method: string, path: string, beforeMiddleware: (middleware)[] = [], afterMiddleware: (middleware)[] = []) {
+  return function (target: any, propertyKey: string) {
+    routerMap.push({
+      method, path: () => {
+        return nodePath.posix.join('/', Reflect.getMetadata(basePathKey, target), path)
+      }, middleware: [...beforeMiddleware, target[propertyKey].bind(target), ...afterMiddleware]
+    })
   }
 }
 
-export function GetMapping(path: string) {
-  return RequestMapping('get', path)
+export function GetMapping(path: string, beforeMiddleware?: (middleware)[], afterMiddleware?: (middleware)[]) {
+  return RequestMapping('get', path, beforeMiddleware, afterMiddleware)
 }
 
-export function PostMapping(path: string) {
-  return RequestMapping('post', path)
+export function PostMapping(path: string, beforeMiddleware?: (middleware)[], afterMiddleware?: (middleware)[]) {
+  return RequestMapping('post', path, beforeMiddleware, afterMiddleware)
 }
 
-export function DeleteMapping(path: string) {
-  return RequestMapping('delete', path)
+export function DeleteMapping(path: string, beforeMiddleware?: (middleware)[], afterMiddleware?: (middleware)[]) {
+  return RequestMapping('delete', path, beforeMiddleware, afterMiddleware)
 }
 
-export function PutMapping(path: string) {
-  return RequestMapping('put', path)
+export function PutMapping(path: string, beforeMiddleware?: (middleware)[], afterMiddleware?: (middleware)[]) {
+  return RequestMapping('put', path, beforeMiddleware, afterMiddleware)
 }
-
