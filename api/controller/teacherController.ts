@@ -1,12 +1,11 @@
-import Application from "koa";
-
-import Teacher, {TeacherDocument} from '../models/Teacher';
-import Controller from '../tools/Controller';
-import {teacherRegisterSuccess} from "./wx/pushMsg";
-import SpaceRule from "../models/SpaceRule";
-import SpaceArea from "../models/SpaceArea";
 import {DeleteMapping, GetMapping, Inject, PostMapping, PutMapping, RequestMapping} from "../desc";
+import Teacher, {TeacherDocument} from '../models/Teacher';
 import {checkAdmin, checkAuth} from "../middleware/auth";
+
+import Application from "koa";
+import Controller from '../tools/Controller';
+import SpaceRule from "../models/SpaceRule";
+import {teacherRegisterSuccess} from "./wx/pushMsg";
 
 @RequestMapping('teachers')
 export class TeacherController extends Controller<TeacherDocument> {
@@ -26,7 +25,6 @@ export class TeacherController extends Controller<TeacherDocument> {
     setImmediate(async () => {
       // 删除 规则以及空闲时间
       await SpaceRule.deleteMany({teacher: id})
-      await SpaceArea.deleteMany({teacher: id})
     })
   }
 

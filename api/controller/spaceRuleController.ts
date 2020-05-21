@@ -1,33 +1,12 @@
 import Application, {Context} from "koa";
-import SpaceArea from "../models/SpaceArea";
+import {GetMapping, Inject, PostMapping, RequestMapping} from "../desc";
+import SpaceRule, {SpaceRuleDocument} from "../models/SpaceRule";
 import {accordWithRule, copyHour, getActivityArea} from "../tools/dateTools";
+
 import Controller from "../tools/Controller";
 import Course from "../models/Course";
-import SpaceRule, {SpaceRuleDocument} from "../models/SpaceRule";
-import {GetMapping, Inject, PostMapping, RequestMapping} from "../desc";
 import {checkAuth} from "../middleware/auth";
 import {mongoSession} from "../middleware/mongoSession";
-
-/** 自动新增空闲时间 */
-const setSpaceArea = async (spaceRule: SpaceRuleDocument, opt = {}) => {
-  const {startTime, endTime, teacher, student} = spaceRule
-  const days = accordWithRule(startTime) // 输入星期，返回有效日期列表
-  for (let i = 0; i < days.length; i++) {
-    let date = days[i]
-    const spaceArea = new SpaceArea({
-      teacher,
-      student,
-      spaceRule,
-      startTime: copyHour(date, startTime),
-      endTime: copyHour(date, endTime)
-    })
-    await spaceArea.save(opt)
-  }
-}
-
-const delSpaceArea = async (id: string, opt: { session?: any } = {}) => {
-  await SpaceArea.deleteMany({spaceRule: id}, opt)
-}
 
 @RequestMapping('spaceRules')
 export class SpaceRuleController extends Controller<SpaceRuleDocument> {
@@ -46,51 +25,33 @@ export class SpaceRuleController extends Controller<SpaceRuleDocument> {
   @PostMapping('spaceRulesUpdate', [checkAuth, mongoSession])
   async modify(ctx: Context) {
     const {session} = ctx.state
-    ctx.assert(session, 500, 'no session')
     const {del: delIds = [], add: addItems = []} = ctx.request.body
-    if (delIds.length === 0) { // 只有新增的，没有删除
-      for (let i in addItems) {
-        const item = await SpaceRule.create(addItems[i], {session})
-        await setSpaceArea(item, {session})
-      }
-    } else { // 有删除，有新增
-      for (let i in delIds) { // 先删除
-        let id = delIds[i]
-        await SpaceRule.deleteOne({_id: id}, {session})
-        await delSpaceArea(id, {session})
-      }
-      for (let i in addItems) { // 后新增
-        const item = await new SpaceRule(addItems[i]).save({session})
-        await setSpaceArea(item, {session})
-      }
-      // 获取本人 生效的&被删除空闲规则的 课程
-      {
-        const {teacher, student} = addItems[0]
-        const params = teacher ? {teacher, teacherSpaceRule: {$in: delIds}} : {
-          student,
-          studentSpaceRule: {$in: delIds}
-        }
-        const activityArea = getActivityArea()
-        const courses = await Course.find({
-          ...params,
-          startTime: {$gte: activityArea[0], $lt: activityArea[1]},
-        }, undefined, {session})
-        for (let i = 0; i < courses.length; i++) {
-          let course = courses[i]
-          const {startTime, endTime} = course
-          const person = teacher ? {teacher} : {student}
-          const spaceRule = await SpaceArea.cropArea({
-            ...person,
-            startTime,
-            endTime,
-            session
-          })
-          if (teacher) {
-            course.teacherSpaceRule = spaceRule
-          } else {
-            course.studentSpaceRule = spaceRule
-          }
-          await course.save({session}) // 有修改对应绑定的规则，需要重新保存
+    ctx.assert(delIds.length && addItems.length, 400, '参数异常')
+    const person:any = {teacher: null, student: null}
+    if (addItems.length) {
+      person.teacher =addItems[0].teacher
+      person.student =addItems[0].student
+    } else {
+      let temp = await SpaceRule.findById(delIds[0], undefined, {session})
+      person.teacher = temp.teacher
+      person.student = temp.student
+    }
+    for (let i in addItems) {
+      await SpaceRule.create(addItems[i], {session})
+    }
+    if (delIds.length) {
+      await SpaceRule.deleteMany({_id: {$in: delIds}}, {session})
+    }
+    // 校验规则（不能有连续的时间，不能重叠）
+    {
+      const {teacher, student} = person
+      const params = teacher ? {teacher} : {student}
+      const rules = await SpaceRule.find(params, undefined, {session}).sort('-startTime')
+      if (rules.length > 1) {
+        for(let i = 0; i < (rules.length - 1); i ++) {
+          let temp = rules[i]
+          let next = rules[i + 1]
+          ctx.assert(temp.endTime > next.startTime, 400, '时间段不能连续或重叠')
         }
       }
     }

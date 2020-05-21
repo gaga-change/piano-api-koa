@@ -51,11 +51,34 @@ schema.static({
    */
   async findByActivateArea(this: Model<CourseDocument>, options: FindByActivateAreaOptions) {
     return  findByActivateArea(this, options)
+  },
+  /**
+   * 给定时间范围，查询有时间重叠的课程
+   * @param this 
+   * @param startTime 
+   * @param endTime 
+   */
+  async findByTimeArea(this: Model<CourseDocument>, startTime: Date | string | number, endTime: Date | string | number, teacher?: string, student?: string) {
+    startTime = new Date(startTime)
+    endTime = new Date(endTime)
+    const params: {$or: any, teacher?: string, student?: string} = { $or :[
+      { startTime: { $gte: startTime, $lt: endTime } },
+      { endTime: { $gt: startTime, $lte: endTime } },
+      { startTime: { $lte: startTime }, endTime: { $gte: endTime } }
+    ]}
+    if (teacher) {
+      params.teacher = teacher
+    }
+    if (student) {
+      params.student = student
+    }
+    return this.find(params)
   }
 })
 
 interface CourseModel extends Model<CourseDocument> {
   findByActivateArea(options: FindByActivateAreaOptions): Promise<Array<CourseDocument>>
+  findByTimeArea(startTime: Date | string | number, endTime: Date | string | number, teacher?: string, student?: string): Promise<Array<CourseDocument>>
 }
 
 export default <CourseModel>mongoose.model<CourseDocument>('Course', schema, 'piano_space_course');

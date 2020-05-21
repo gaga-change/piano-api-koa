@@ -1,13 +1,12 @@
 // 定时任务
-import schedule from 'node-schedule'
-import spaceAreaController from "../controller/spaceAreaController"
+
 import NodeModel from "../models/NodeModel"
+import schedule from 'node-schedule'
 
 const {HOSTNAME} = process.env
 
 const scheduleControl = async () => {
   if (HOSTNAME) {
-
     schedule.scheduleJob('0 30 0 * * *', async () => {
       // 清理节点
       await NodeModel.deleteMany({})
@@ -25,8 +24,6 @@ const scheduleControl = async () => {
       const nodeModule = await NodeModel.findOne().sort("-_id")
       if (nodeModule && nodeModule.name && nodeModule.name === HOSTNAME) {
         console.log('定时任务脚本...', new Date().toLocaleString())
-        const res = await spaceAreaController.autoCreateService()
-        console.log(`自动新增空闲时间数量：${res}`)
       } else {
         console.log('不执行定时任务')
       }
