@@ -1,7 +1,6 @@
 import * as controllers from "./controller"
 
 import Router from 'koa-router'
-import auth from './controller/authController';
 import courseController from './controller/courseController';
 import enumController from './controller/enumController';
 import leaveAreaController from './controller/leaveAreaController';
@@ -14,11 +13,10 @@ import teacherController from './controller/teacherController';
 import wxController from './wx/wxController';
 import wxStudentController from './wx/student/wxStudentController';
 import wxTeacherController from './wx/teacher/wxTeacherController';
+import {checkAdmin, checkAuth} from "./middleware/auth";
 
 const router = new Router({prefix: '/api'})
 
-const checkAuth = auth.checkAuth.bind(auth)
-const checkAdmin = auth.checkAdmin.bind(auth)
 const { teacherAuth, studentAuth } = wxController
 
 router.get('/wx/:type/tagsSync', wxController.wxTagSync.bind(wxController))
@@ -26,10 +24,6 @@ router.get('/wx/account', wxController.wxAccount.bind(wxController))
 router.get('/wx/:type/login', wxController.wxLogin.bind(wxController))
 router.post('/wx/teacher/register', teacherAuth, wxTeacherController.register)
 router.post('/wx/student/register', studentAuth, wxStudentController.register)
-
-router.post('/auth/login', auth.login.bind(auth))
-router.post('/auth/logout', auth.logout.bind(auth))
-router.get('/auth/account', checkAuth, auth.account)
 
 router.post('/enums', checkAuth, checkAdmin, enumController.create.bind(enumController))
 router.delete('/enums/:id', checkAuth, checkAdmin, enumController.destroy.bind(enumController))
