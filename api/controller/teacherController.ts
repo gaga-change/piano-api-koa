@@ -1,22 +1,37 @@
-import {Model} from "mongoose";
-import {Context} from "koa";
+import Application from "koa";
 
 import Teacher, {TeacherDocument} from '../models/Teacher';
 import Controller from '../tools/Controller';
-import {teacherRegisterSuccess} from "../wx/pushMsg";
+import {teacherRegisterSuccess} from "./wx/pushMsg";
 import SpaceRule from "../models/SpaceRule";
 import SpaceArea from "../models/SpaceArea";
+import {DeleteMapping, GetMapping, Inject, PostMapping, PutMapping, RequestMapping} from "../desc";
+import {checkAdmin, checkAuth} from "../middleware/auth";
 
-class TeacherController extends Controller<TeacherDocument> {
-  constructor(model: Model<any>) {
-    super(model)
+@RequestMapping('teachers')
+export class TeacherController extends Controller<TeacherDocument> {
+
+  @Inject(Teacher)
+  Model:any
+
+  @PostMapping('', [checkAuth, checkAdmin])
+  async create(ctx: Application.Context): Promise<void> {
+    await super.create(ctx);
   }
 
-  /**
-   * 更新操作
-   * @param ctx
-   */
-  async update(ctx: Context) {
+  @DeleteMapping(':id', [checkAuth, checkAdmin])
+  async destroy(ctx: Application.Context): Promise<void> {
+    const id:string = ctx.params.id
+    await super.destroy(ctx);
+    setImmediate(async () => {
+      // 删除 规则以及空闲时间
+      await SpaceRule.deleteMany({teacher: id})
+      await SpaceArea.deleteMany({teacher: id})
+    })
+  }
+
+  @PutMapping(':id', [checkAuth, checkAdmin])
+  async update(ctx: Application.Context): Promise<void> {
     const test = new Teacher()
     test.name;
     const { body } = ctx.request
@@ -32,14 +47,14 @@ class TeacherController extends Controller<TeacherDocument> {
     }
   }
 
-  async destroy(ctx: Context): Promise<void> {
-    const id:string = ctx.params.id
-    await super.destroy(ctx);
-    setImmediate(async () => {
-      // 删除 规则以及空闲时间
-      await SpaceRule.deleteMany({teacher: id})
-      await SpaceArea.deleteMany({teacher: id})
-    })
+  @GetMapping(':id', )
+  async show(ctx: Application.Context): Promise<void> {
+    await super.show(ctx);
+  }
+
+  @GetMapping('')
+  async index(ctx: Application.Context): Promise<void> {
+    await super.index(ctx);
   }
 }
 

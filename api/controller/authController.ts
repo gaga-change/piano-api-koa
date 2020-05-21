@@ -1,7 +1,7 @@
 import code from "../config/code";
 import {UserDocument} from "../models/User";
 import {Context} from "koa";
-import {Controller, GetMapping, PostMapping} from "../desc";
+import { GetMapping, PostMapping, RequestMapping} from "../desc";
 import {checkAuth} from "../middleware/auth";
 
 
@@ -14,7 +14,7 @@ function isCustomer(user:UserDocument) {
 }
 
 
-@Controller('auth')
+@RequestMapping('auth')
 export class AuthController {
   /** 登录 */
   @PostMapping('login')

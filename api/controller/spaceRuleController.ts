@@ -1,10 +1,12 @@
-import {Context} from "koa";
+import Application, {Context} from "koa";
 import SpaceArea from "../models/SpaceArea";
 import {accordWithRule, copyHour, getActivityArea} from "../tools/dateTools";
 import Controller from "../tools/Controller";
 import Course from "../models/Course";
 import SpaceRule, {SpaceRuleDocument} from "../models/SpaceRule";
-import {Model} from "mongoose";
+import {GetMapping, Inject, PostMapping, RequestMapping} from "../desc";
+import {checkAuth} from "../middleware/auth";
+import {mongoSession} from "../middleware/mongoSession";
 
 /** 自动新增空闲时间 */
 const setSpaceArea = async (spaceRule: SpaceRuleDocument, opt = {}) => {
@@ -27,21 +29,21 @@ const delSpaceArea = async (id: string, opt: { session?: any } = {}) => {
   await SpaceArea.deleteMany({spaceRule: id}, opt)
 }
 
-class SpaceRuleController extends Controller<SpaceRuleDocument> {
-  constructor(model: Model<SpaceRuleDocument>) {
-    super(model, {defaultSort: {startTime: 1}})
-  }
-
-
+@RequestMapping('spaceRules')
+export class SpaceRuleController extends Controller<SpaceRuleDocument> {
+  @Inject(SpaceRule)
+  Model:any
   /**
    * 清理 主文档被删除的文档
    * @param ctx
    */
+  @PostMapping('spaceRulesClearNoTeacherOrStudent', [checkAuth])
   async clearDiscardDoc(ctx: Context) {
     ctx.body = await SpaceRule.removeNoTeacherOrStudent()
   }
 
   /** 批量修改 */
+  @PostMapping('spaceRulesUpdate', [checkAuth, mongoSession])
   async modify(ctx: Context) {
     const {session} = ctx.state
     ctx.assert(session, 500, 'no session')
@@ -95,25 +97,8 @@ class SpaceRuleController extends Controller<SpaceRuleDocument> {
     ctx.body = ctx.request.body
   }
 
-  async create(ctx: Context) {
-    let item = ctx.request.body;
-
-    item = new this.Model(item);
-    ctx.body = await item.save()
-    setImmediate(async () => {
-      await setSpaceArea(item)
-    })
-  }
-
-  async destroy(ctx: Context) {
-    const {id} = ctx.params;
-
-    await this.Model.deleteOne({_id: id})
-    setImmediate(async () => {
-      await delSpaceArea(id)
-    })
-    ctx.body = null
+  @GetMapping('')
+  async index(ctx: Application.Context): Promise<void> {
+    await super.index(ctx);
   }
 }
-
-export default new SpaceRuleController(SpaceRule)

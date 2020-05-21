@@ -2,18 +2,20 @@ import Controller from "../tools/Controller";
 import SpaceArea, {SpaceAreaDocument} from "../models/SpaceArea";
 import {copyHour, initHour, ONE_DAY_TIME, validDays} from "../tools/dateTools";
 import SpaceRule from "../models/SpaceRule";
-import {Model} from "mongoose";
 import {Context} from "koa";
+import {GetMapping, Inject, PostMapping, RequestMapping} from "../desc";
+import {checkAuth} from "../middleware/auth";
 
-class SpaceAreaController extends Controller<SpaceAreaDocument> {
-  constructor(model: Model<SpaceAreaDocument>) {
-    super(model)
-  }
+@RequestMapping('spaceAreas')
+export class SpaceAreaController extends Controller<SpaceAreaDocument> {
+  @Inject(SpaceArea)
+  Model:any
 
   /**
    * 获取周期内的空闲时间
    * @param ctx
    */
+  @GetMapping('spaceAreaActivateArea')
   async findByActivateArea(ctx: Context) {
     const {teacher, student} = ctx.query
     ctx.assert(teacher || student, 400, '参数有误')
@@ -24,6 +26,7 @@ class SpaceAreaController extends Controller<SpaceAreaDocument> {
    * 清理 主文档被删除的文档
    * @param ctx
    */
+  @PostMapping('spaceAreasClearNoTeacherOrStudent', [checkAuth])
   async clearDiscardDoc(ctx: Context) {
     ctx.body = await SpaceArea.removeNoTeacherOrStudent()
   }
@@ -54,12 +57,14 @@ class SpaceAreaController extends Controller<SpaceAreaDocument> {
   }
 
   /** 自动生成空闲时间 */
+  @GetMapping('spaceAreasAutoCreate', [checkAuth])
   async autoCreate(ctx: Context) {
     ctx.body = {
       createNum: await this.autoCreateService()
     }
   }
 
+  @GetMapping('')
   async index(ctx: Context) {
     const query = ctx.query;
     const pageSize = Number(ctx.query.pageSize) || 20

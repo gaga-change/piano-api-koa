@@ -1,8 +1,8 @@
-import {TeacherDocument, StudentDocument} from "../models";
+import {TeacherDocument, StudentDocument} from "../../models";
 import {AxiosResponse} from "axios";
 
 import axios from 'axios';
-import { getToken, TEACHER_TYPE, STUDENT_TYPE, getUserByTagName } from '../tools/wxTools'
+import { getToken, TEACHER_TYPE, STUDENT_TYPE, getUserByTagName } from '../../tools/wxTools'
 
 export const teacherRegisterSuccess = async (teacher: TeacherDocument) => {
   const token = await getToken(TEACHER_TYPE)

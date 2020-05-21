@@ -16,35 +16,38 @@ interface middleware {
 
 export const routerMap: Array<test> = []
 
-
-export function Controller(path?: string) {
-  return function (target: any) {
-    Reflect.defineMetadata(basePathKey, path || '/', target.prototype)
+export function Inject(model: any) {
+  return (target: any, key: string) => {
+    target[key] = model
   }
 }
 
-export function RequestMapping(method: string, path: string, beforeMiddleware: (middleware)[] = [], afterMiddleware: (middleware)[] = []) {
-  return function (target: any, propertyKey: string) {
-    routerMap.push({
-      method, path: () => {
-        return nodePath.posix.join('/', Reflect.getMetadata(basePathKey, target), path)
-      }, middleware: [...beforeMiddleware, target[propertyKey].bind(target), ...afterMiddleware]
-    })
+export function RequestMapping(path: string, method?: string, beforeMiddleware: (middleware)[] = [], afterMiddleware: (middleware)[] = []) {
+  return function (target: any, propertyKey?: string, descriptor?: PropertyDescriptor ) {
+    if (!propertyKey && !descriptor) { // 类
+      Reflect.defineMetadata(basePathKey, path || '/', target.prototype)
+    } else if (propertyKey && descriptor) { // 方法
+      routerMap.push({
+        method, path: () => {
+          return nodePath.posix.join('/', Reflect.getMetadata(basePathKey, target), path || '')
+        }, middleware: [...beforeMiddleware, target[propertyKey].bind(target), ...afterMiddleware]
+      })
+    }
   }
 }
 
 export function GetMapping(path: string, beforeMiddleware?: (middleware)[], afterMiddleware?: (middleware)[]) {
-  return RequestMapping('get', path, beforeMiddleware, afterMiddleware)
+  return RequestMapping(path,'get', beforeMiddleware, afterMiddleware)
 }
 
 export function PostMapping(path: string, beforeMiddleware?: (middleware)[], afterMiddleware?: (middleware)[]) {
-  return RequestMapping('post', path, beforeMiddleware, afterMiddleware)
+  return RequestMapping(path,'post',  beforeMiddleware, afterMiddleware)
 }
 
 export function DeleteMapping(path: string, beforeMiddleware?: (middleware)[], afterMiddleware?: (middleware)[]) {
-  return RequestMapping('delete', path, beforeMiddleware, afterMiddleware)
+  return RequestMapping(path,'delete',  beforeMiddleware, afterMiddleware)
 }
 
 export function PutMapping(path: string, beforeMiddleware?: (middleware)[], afterMiddleware?: (middleware)[]) {
-  return RequestMapping('put', path, beforeMiddleware, afterMiddleware)
+  return RequestMapping( path,'put', beforeMiddleware, afterMiddleware)
 }

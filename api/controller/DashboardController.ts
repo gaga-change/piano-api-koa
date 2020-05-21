@@ -1,10 +1,10 @@
-import { Controller, GetMapping } from "../desc";
+import { RequestMapping, GetMapping } from "../desc";
 
 import {Context} from "koa";
 import Teacher from "../models/Teacher";
 import Student from "../models/Student";
 
-@Controller('dashboard')
+@RequestMapping('dashboard')
 export class DashboardController {
   @GetMapping("readyDataNum")
   async home(ctx: Context) {

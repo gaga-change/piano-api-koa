@@ -4,8 +4,12 @@ import SpaceArea from "../models/SpaceArea";
 import {Context} from "koa";
 import Course, {CourseDocument} from "../models/Course";
 import {getActivityArea, isOldDate} from "../tools/dateTools";
+import {DeleteMapping, GetMapping, PostMapping, PutMapping, RequestMapping} from "../desc";
+import {checkAuth} from "../middleware/auth";
+import {mongoSession} from "../middleware/mongoSession";
 
-class CourseController extends Controller<CourseDocument> {
+@RequestMapping('courses')
+export  class CourseController extends Controller<CourseDocument> {
   constructor(model: Model<CourseDocument>) {
     super(model)
   }
@@ -14,6 +18,7 @@ class CourseController extends Controller<CourseDocument> {
    * 获取当前周期内的 所有课程
    * @param ctx
    */
+  @GetMapping('coursesActivateArea')
   async findActivateCourse(ctx: Context) {
     const {teacher, student} = ctx.query
     ctx.assert(teacher || student, 400, '参数异常')
@@ -21,6 +26,7 @@ class CourseController extends Controller<CourseDocument> {
   }
 
   /** 创建 */
+  @PostMapping('', [checkAuth, mongoSession])
   async create(ctx: Context) {
     const body = ctx.request.body
     const {session} = ctx.state
@@ -51,6 +57,7 @@ class CourseController extends Controller<CourseDocument> {
   }
 
   /** 删除 */
+  @DeleteMapping(':id', [checkAuth, mongoSession])
   async destroy(ctx: Context) {
     const {id} = ctx.params;
     const {session} = ctx.state
@@ -69,6 +76,7 @@ class CourseController extends Controller<CourseDocument> {
   }
 
   /** 更新 */
+  @PutMapping(':id', [checkAuth, mongoSession])
   async update(ctx: Context) {
     const {id} = ctx.params;
     const item = ctx.request.body;
@@ -110,6 +118,12 @@ class CourseController extends Controller<CourseDocument> {
     ctx.body = null
   }
 
+  @GetMapping(':id')
+  async show(ctx: Context): Promise<void> {
+    await super.show(ctx);
+  }
+
+  @GetMapping('')
   async index(ctx: Context) {
     const pageSize = Number(ctx.query.pageSize) || 20
     const page = Number(ctx.query.pageNum) || 1
