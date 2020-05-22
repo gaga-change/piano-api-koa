@@ -4,7 +4,7 @@ import mongoose, {Schema, Document, Model} from 'mongoose'
 import {findIdRemovedConfig} from "../tools/aggregateConfig";
 import {PersonDocument} from "./Person";
 import {PERSON_DB_NAME} from "../config/dbName";
-import {initHour} from "../tools/dateTools";
+import {initStartTimeAndEndTimeSchema, startTimeAndEndTimeSchema} from "./startTimeAndEndTimeSchema";
 
 export interface SpaceRuleDocument extends  Document {
   setWeek(week: number):SpaceRuleDocument;
@@ -15,21 +15,18 @@ export interface SpaceRuleDocument extends  Document {
 }
 
 const schema = new Schema({
-  startTime: {type: Date, required: true}, // 开始时间
-  endTime: {
-    type: Date, required: true, validate: {
-      validator: function () {
-        if (!(this.startTime instanceof Date) || !(this.endTime instanceof Date)) return true
-        return initHour(this.startTime).getTime() === initHour(this.endTime).getTime() && this.startTime <= this.endTime
-      },
-      message: '开始时间必须小于等于结束时间，且必须同一天'
-    }
-  },
+  ...startTimeAndEndTimeSchema,
   person: { type: Schema.Types.ObjectId, ref: 'Person', required: true },
   remark: { type: String, default: '', trim: true }, // 备注
 }, {
   timestamps: true,
 })
+
+schema.pre('validate', function(this: SpaceRuleDocument,next) {
+  initStartTimeAndEndTimeSchema(this.startTime, this.endTime)
+  next();
+});
+
 
 schema.method({
   setWeek(week: number) {

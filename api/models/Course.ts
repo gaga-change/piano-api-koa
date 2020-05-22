@@ -6,6 +6,7 @@ import {TeacherDocument} from "./Teacher";
 import {StudentDocument} from "./Student";
 import {SpaceRuleDocument} from "./SpaceRule";
 import {findByActivateArea, FindByActivateAreaOptions} from "../tools/aggregateConfig";
+import {initStartTimeAndEndTimeSchema, startTimeAndEndTimeSchema} from "./startTimeAndEndTimeSchema";
 
 export interface CourseDocument extends Document {
   startTime: Date
@@ -23,16 +24,7 @@ export interface CourseDocument extends Document {
 }
 
 const schema = new Schema({
-  startTime: {type: Date, required: true}, // 开始时间
-  endTime: {
-    type: Date, required: true, validate: {
-      validator: function () {
-        if (!(this.startTime instanceof Date) || !(this.endTime instanceof Date)) return true
-        return initHour(this.startTime).getTime() === initHour(this.endTime).getTime() && this.startTime <= this.endTime
-      },
-      message: '开始时间必须小于等于结束时间，且必须同一天'
-    }
-  }, // 结束时间，
+  ...startTimeAndEndTimeSchema,
   teacher: {type: Schema.Types.ObjectId, ref: 'Teacher'},
   student: {type: Schema.Types.ObjectId, ref: 'Student'},
   teacherTag: {type: Number}, // 老师标签
@@ -52,6 +44,11 @@ const schema = new Schema({
 }, {
   timestamps: true,
 })
+
+schema.pre('validate', function(this: CourseDocument,next) {
+  initStartTimeAndEndTimeSchema(this.startTime, this.endTime)
+  next();
+});
 
 schema.virtual('date').get(function (this: CourseDocument) {
   return initHour(this.startTime)

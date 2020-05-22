@@ -1,18 +1,15 @@
 import Course, {CourseDocument} from "../models/Course";
-import {DeleteMapping, GetMapping, PostMapping, PutMapping, RequestMapping} from "../desc";
-import {getActivityArea, isOldDate} from "../tools/dateTools";
+import {DeleteMapping, GetMapping, Inject, PostMapping, PutMapping, RequestMapping} from "../desc";
 
 import {Context} from "koa";
 import Controller from "../tools/Controller";
-import {Model} from "mongoose";
 import {checkAuth} from "../middleware/auth";
-import {mongoSession} from "../middleware/mongoSession";
 
 @RequestMapping('courses')
 export  class CourseController extends Controller<CourseDocument> {
-  constructor(model: Model<CourseDocument>) {
-    super(model)
-  }
+
+  @Inject(Course)
+  Model: any
 
   /**
    * 获取当前周期内的 所有课程

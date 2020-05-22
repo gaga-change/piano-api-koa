@@ -55,7 +55,7 @@ class Controller<T extends Document> {
     delete params.pageSize
     delete params.pageNum
     Object.keys(params).forEach(key => {
-      if (this.Model.schema.obj[key].type === String) {
+      if (this.Model.schema.obj[key] && this.Model.schema.obj[key].type === String) {
         params[key] = new RegExp(params[key], 'i')
       }
     })

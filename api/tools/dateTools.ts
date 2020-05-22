@@ -14,17 +14,6 @@ export const initHour = (date?: string | Date | number ) : Date  => {
   return temp
 }
 
-
-/** 拷贝时分 到另一个时间， 默认 秒和毫秒为0, 不改变目标本身 */
-export const copyHour = (target: Date , date: Date) : Date => {
-  target = new Date(target)
-  let hour = date.getHours()
-  let min = date.getMinutes()
-  target.setHours(hour)
-  target.setMinutes(min)
-  return target
-}
-
 /** 返回所有有效日（默认当天开始），时分秒为0 */
 export const validDays = (startDate?: string | Date | number): Array<Date> => {
   let today = initHour(new Date())

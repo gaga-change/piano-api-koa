@@ -35,14 +35,10 @@ app.use(koaBody({ jsonLimit: '10kb' }))
 app.use(session(CONFIG, app))
 // 日志信息输出
 app.use(logger())
-// Api 接口
-app.use(api)
-// app.use(async (ctx) => {
-//   ctx.body = '钢琴 - 接口'
-// })
 app.use(async (ctx, next) => {
   await next().catch(err => {
     if (err.name === 'ValidationError') {
+      console.log('???????????????')
       let megArr = Object.keys(err.errors).map(key => err.errors[key].message)
       return Promise.reject(new ThrowError(megArr.join(',')))
     } else {
@@ -50,6 +46,11 @@ app.use(async (ctx, next) => {
     }
   })
 })
+// Api 接口
+app.use(api)
+// app.use(async (ctx) => {
+//   ctx.body = '钢琴 - 接口'
+// })
 // 异常监听
 app.on('error', (err: any) => {
   console.error(err)
