@@ -1,24 +1,21 @@
 // 清单
 
 import mongoose, {Schema, Document, Model} from 'mongoose'
-import {TeacherDocument} from "./Teacher";
-import {StudentDocument} from "./Student";
-import {removeNoTeacherOrStudent} from "../tools/aggregateConfig";
+import {findIdRemovedConfig} from "../tools/aggregateConfig";
+import {PersonDocument} from "./Person";
 
 export interface SpaceRuleDocument extends  Document {
   setWeek(week: number):SpaceRuleDocument;
   startTime: Date
   endTime: Date
-  teacher?: Schema.Types.ObjectId | TeacherDocument | string
-  student?: Schema.Types.ObjectId | StudentDocument | string
+  person?: Schema.Types.ObjectId | PersonDocument | string
   remark?: string
 }
 
 const schema = new Schema({
   startTime: { type: Date, }, // 开始时间
   endTime: { type: Date }, // 结束时间，
-  teacher: { type: Schema.Types.ObjectId, ref: 'Teacher' },
-  student: { type: Schema.Types.ObjectId, ref: 'Student' },
+  person: { type: Schema.Types.ObjectId, ref: 'Person' },
   remark: { type: String, default: '', trim: true }, // 备注
 }, {
   timestamps: true,
@@ -47,7 +44,19 @@ schema.static({
    * 删除老师或学生已被删除的数据
    */
   async removeNoTeacherOrStudent(this: Model<SpaceRuleDocument>): Promise<{ idNum: number, docNum: number }> {
-    return await removeNoTeacherOrStudent(this)
+    let idNum = 0;
+    let docNum = 0;
+    const personIds = await this.aggregate(findIdRemovedConfig('person', 'piano_person'))
+    idNum += personIds.length
+    for (let i = 0; i < personIds.length; i++) {
+      const id = personIds[i]._id
+      const res = await this.deleteMany({person: id})
+      docNum += res.deletedCount
+    }
+    return {
+      idNum,
+      docNum
+    }
   }
 })
 

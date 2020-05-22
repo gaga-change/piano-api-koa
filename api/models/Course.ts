@@ -40,7 +40,7 @@ const schema = new Schema({
   classType: {type: Number, required: [true, '课类型必填']}, // 课类型
   classTime: {
     type: Number, required: [true, '课时长必填'], validate: {
-      validator: function (val) {
+      validator: function (val: number) {
         if (!this.endTime || !this.startTime) return true
         return this.endTime && this.startTime && (this.endTime.getTime() - this.startTime.getTime()) === val * 60 * 1000
       },

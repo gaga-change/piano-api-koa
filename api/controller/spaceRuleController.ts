@@ -1,10 +1,8 @@
 import Application, {Context} from "koa";
 import {GetMapping, Inject, PostMapping, RequestMapping} from "../desc";
 import SpaceRule, {SpaceRuleDocument} from "../models/SpaceRule";
-import {accordWithRule, copyHour, getActivityArea} from "../tools/dateTools";
 
 import Controller from "../tools/Controller";
-import Course from "../models/Course";
 import {checkAuth} from "../middleware/auth";
 import {mongoSession} from "../middleware/mongoSession";
 
@@ -27,14 +25,12 @@ export class SpaceRuleController extends Controller<SpaceRuleDocument> {
     const {session} = ctx.state
     const {del: delIds = [], add: addItems = []} = ctx.request.body
     ctx.assert(delIds.length && addItems.length, 400, '参数异常')
-    const person:any = {teacher: null, student: null}
+    let person:any
     if (addItems.length) {
-      person.teacher =addItems[0].teacher
-      person.student =addItems[0].student
+      person = addItems[0].person
     } else {
       let temp = await SpaceRule.findById(delIds[0], undefined, {session})
-      person.teacher = temp.teacher
-      person.student = temp.student
+      person = temp.person
     }
     for (let i in addItems) {
       await SpaceRule.create(addItems[i], {session})
@@ -44,9 +40,7 @@ export class SpaceRuleController extends Controller<SpaceRuleDocument> {
     }
     // 校验规则（不能有连续的时间，不能重叠）
     {
-      const {teacher, student} = person
-      const params = teacher ? {teacher} : {student}
-      const rules = await SpaceRule.find(params, undefined, {session}).sort('-startTime')
+      const rules = await SpaceRule.find({person}, undefined, {session}).sort('-startTime')
       if (rules.length > 1) {
         for(let i = 0; i < (rules.length - 1); i ++) {
           let temp = rules[i]
