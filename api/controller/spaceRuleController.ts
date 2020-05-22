@@ -9,7 +9,8 @@ import {mongoSession} from "../middleware/mongoSession";
 @RequestMapping('spaceRules')
 export class SpaceRuleController extends Controller<SpaceRuleDocument> {
   @Inject(SpaceRule)
-  Model:any
+  Model: any
+
   /**
    * 清理 主文档被删除的文档
    * @param ctx
@@ -23,17 +24,10 @@ export class SpaceRuleController extends Controller<SpaceRuleDocument> {
   @PostMapping('spaceRulesUpdate', [checkAuth, mongoSession])
   async modify(ctx: Context) {
     const {session} = ctx.state
-    const {del: delIds = [], add: addItems = []} = ctx.request.body
+    const {del: delIds = [], add: addItems = [], person} = ctx.request.body
     ctx.assert(delIds.length && addItems.length, 400, '参数异常')
-    let person:any
-    if (addItems.length) {
-      person = addItems[0].person
-    } else {
-      let temp = await SpaceRule.findById(delIds[0], undefined, {session})
-      person = temp.person
-    }
     for (let i in addItems) {
-      await SpaceRule.create(addItems[i], {session})
+      await SpaceRule.create({...addItems[i], person}, {session})
     }
     if (delIds.length) {
       await SpaceRule.deleteMany({_id: {$in: delIds}}, {session})
@@ -42,7 +36,7 @@ export class SpaceRuleController extends Controller<SpaceRuleDocument> {
     {
       const rules = await SpaceRule.find({person}, undefined, {session}).sort('-startTime')
       if (rules.length > 1) {
-        for(let i = 0; i < (rules.length - 1); i ++) {
+        for (let i = 0; i < (rules.length - 1); i++) {
           let temp = rules[i]
           let next = rules[i + 1]
           ctx.assert(temp.endTime > next.startTime, 400, '时间段不能连续或重叠')
