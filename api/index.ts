@@ -6,6 +6,7 @@ import session from 'koa-session'
 import  {PORT, MONGO_LINK} from './config'
 import schedule from './schedule'
 import api from './router'
+import ThrowError from "./tools/ThrowError";
 const app = new Koa()
 
 setImmediate(schedule)
@@ -43,10 +44,7 @@ app.use(async (ctx, next) => {
   await next().catch(err => {
     if (err.name === 'ValidationError') {
       let megArr = Object.keys(err.errors).map(key => err.errors[key].message)
-      let error =  new Error(megArr.join(','))
-      error.status = 400
-      error.expose = true
-      return Promise.reject(error)
+      return Promise.reject(new ThrowError(megArr.join(',')))
     } else {
       return Promise.reject(err)
     }
