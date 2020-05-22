@@ -1,6 +1,7 @@
 
 import {Schema} from 'mongoose';
 import Person, {PersonDocument} from "./Person";
+import {STUDENT_DB_NAME} from "../config/dbName";
 
 export interface StudentDocument extends PersonDocument{
 
@@ -13,4 +14,4 @@ const schema = new Schema({
   discriminatorKey: 'kind'
 })
 
-export default Person.discriminator<StudentDocument>('Student', schema, 'student');
+export default Person.discriminator<StudentDocument>('Student', schema, STUDENT_DB_NAME);

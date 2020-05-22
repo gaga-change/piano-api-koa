@@ -1,7 +1,7 @@
-
-import { Schema} from 'mongoose';
 import Person, {PersonDocument} from "./Person";
 
+import { Schema } from 'mongoose';
+import { TEACHER_DB_NAME } from "../config/dbName";
 
 export interface TeacherDocument extends PersonDocument {
   school?: string
@@ -20,4 +20,4 @@ const schema = new Schema({
   discriminatorKey: 'kind'
 })
 
-export default Person.discriminator<TeacherDocument>('Teacher', schema, 'teacher')
+export default Person.discriminator<TeacherDocument>('Teacher', schema, TEACHER_DB_NAME)

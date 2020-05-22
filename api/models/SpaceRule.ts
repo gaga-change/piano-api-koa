@@ -33,6 +33,9 @@ schema.method({
     this.startTime = new Date(this.startTime).setFullYear(2019, 6, week)
     this.endTime = new Date(this.endTime).setFullYear(2019, 6, week)
     return this
+  },
+  crop() {
+
   }
 })
 
@@ -64,12 +67,51 @@ schema.static({
       idNum,
       docNum
     }
+  },
+  /**
+   * 根据真实日期时间范围 查询有交集的空闲规则
+   * @param startTime
+   * @param endTime
+   * @param personKind
+   */
+  async findByTimeArea(this: Model<SpaceRuleDocument>, startTime: Date, endTime: Date, personKind: string): Promise<Array<SpaceRuleDocument>> {
+    startTime = new Date(startTime)
+    endTime = new Date(endTime)
+    startTime.setFullYear(2019, 6, startTime.getDay() === 0 ? 7 : startTime.getDay())
+    endTime.setFullYear(2019, 6, endTime.getDay() === 0 ? 7 : startTime.getDay())
+    return this.aggregate([
+      {
+        $lookup: {
+          from: PERSON_DB_NAME,
+          localField: 'person',
+          foreignField: "_id",
+          as: "person"
+        }
+      },
+      {
+        $match: {
+          'person.kind': personKind,
+          $or: [
+            {startTime: {$gte: startTime, $lt: endTime}},
+            {endTime: {$gt: startTime, $lte: endTime}},
+            {startTime: {$lte: startTime}, endTime: {$gte: endTime}}
+          ]
+        }
+      },
+      {
+        $addFields: {
+          person:  {$arrayElemAt: ["$person", 0]} ,
+        }
+      },
+    ])
   }
 })
 
 interface SpaceRuleModel extends Model<SpaceRuleDocument>{
   findByWeek(week: number):Promise<Array<SpaceRuleDocument>>
   removeNoTeacherOrStudent():Promise<void>
+  findByTimeArea(startTime: Date, endTime: Date, personKind: string): Promise<Array<SpaceRuleDocument>>
+
 }
 
 export default <SpaceRuleModel>mongoose.model<SpaceRuleDocument>('SpaceRule', schema, 'piano_space_rule');

@@ -3,6 +3,7 @@ import {PERSON_DB_NAME} from "../config/dbName";
 import {PERSON_STATUS_MAP} from "../config/enums";
 
 export interface PersonDocument extends Document {
+  kind: string;
   name: string
   status: number
   phone: string

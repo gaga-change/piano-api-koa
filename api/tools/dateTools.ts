@@ -14,6 +14,17 @@ export const initHour = (date?: string | Date | number ) : Date  => {
   return temp
 }
 
+/**
+ * 拷贝年约日
+ * @param target
+ * @param date
+ */
+export const copyFullYears = (target: Date | string | number, date: Date) => {
+  target = new Date(target)
+  target.setFullYear(date.getFullYear(), date.getMonth(), date.getDate())
+  return target
+}
+
 /** 返回所有有效日（默认当天开始），时分秒为0 */
 export const validDays = (startDate?: string | Date | number): Array<Date> => {
   let today = initHour(new Date())
