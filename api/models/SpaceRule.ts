@@ -3,6 +3,7 @@
 import mongoose, {Schema, Document, Model} from 'mongoose'
 import {findIdRemovedConfig} from "../tools/aggregateConfig";
 import {PersonDocument} from "./Person";
+import {PERSON_DB_NAME} from "../config/dbName";
 
 export interface SpaceRuleDocument extends  Document {
   setWeek(week: number):SpaceRuleDocument;
@@ -46,7 +47,7 @@ schema.static({
   async removeNoTeacherOrStudent(this: Model<SpaceRuleDocument>): Promise<{ idNum: number, docNum: number }> {
     let idNum = 0;
     let docNum = 0;
-    const personIds = await this.aggregate(findIdRemovedConfig('person', 'piano_person'))
+    const personIds = await this.aggregate(findIdRemovedConfig('person', PERSON_DB_NAME))
     idNum += personIds.length
     for (let i = 0; i < personIds.length; i++) {
       const id = personIds[i]._id

@@ -1,4 +1,5 @@
 import mongoose, {Document, Schema} from 'mongoose';
+import {PERSON_DB_NAME} from "../config/dbName";
 
 export interface PersonDocument extends Document {
   name: string
@@ -19,4 +20,4 @@ const schema = new Schema({
   discriminatorKey: 'kind'
 })
 
-export default mongoose.model<PersonDocument>('Person', schema, 'piano_person')
+export default mongoose.model<PersonDocument>('Person', schema, PERSON_DB_NAME)
