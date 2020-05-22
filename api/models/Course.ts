@@ -23,13 +23,14 @@ export interface CourseDocument extends Document {
 }
 
 const schema = new Schema({
-  startTime: {type: Date, required: [true, '开始时间必填']}, // 开始时间
+  startTime: {type: Date, required: true}, // 开始时间
   endTime: {
-    type: Date, required: [true, '结束时间必填'], validate: {
+    type: Date, required: true, validate: {
       validator: function () {
-        return this.startTime < this.endTime
+        if (!(this.startTime instanceof Date) || !(this.endTime instanceof Date)) return true
+        return initHour(this.startTime).getTime() === initHour(this.endTime).getTime() && this.startTime <= this.endTime
       },
-      message: '开始时间必须小于结束时间'
+      message: '开始时间必须小于等于结束时间，且必须同一天'
     }
   }, // 结束时间，
   teacher: {type: Schema.Types.ObjectId, ref: 'Teacher'},
