@@ -24,7 +24,7 @@ export class TeacherController extends Controller<TeacherDocument> {
     await super.destroy(ctx);
     setImmediate(async () => {
       // 删除 规则以及空闲时间
-      await SpaceRule.deleteMany({teacher: id})
+      await SpaceRule.deleteMany({person: id})
     })
   }
 

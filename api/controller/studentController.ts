@@ -26,7 +26,7 @@ export class StudentController extends Controller<StudentDocument> {
 
     setImmediate(async () => {
       // 删除 规则
-      await SpaceRule.deleteMany({student: id})
+      await SpaceRule.deleteMany({person: id})
     })
   }
 
