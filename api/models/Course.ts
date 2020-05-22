@@ -23,17 +23,30 @@ export interface CourseDocument extends Document {
 }
 
 const schema = new Schema({
-  startTime: {type: Date,}, // 开始时间
-  endTime: {type: Date}, // 结束时间，
+  startTime: {type: Date, required: [true, '开始时间必填']}, // 开始时间
+  endTime: {
+    type: Date, required: [true, '结束时间必填'], validate: {
+      validator: function () {
+        return this.startTime < this.endTime
+      },
+      message: '开始时间必须小于结束时间'
+    }
+  }, // 结束时间，
   teacher: {type: Schema.Types.ObjectId, ref: 'Teacher'},
   student: {type: Schema.Types.ObjectId, ref: 'Student'},
-  teacherSpaceRule: {type: Schema.Types.ObjectId, ref: 'SpaceRule'},
-  studentSpaceRule: {type: Schema.Types.ObjectId, ref: 'SpaceRule'},
   teacherTag: {type: Number}, // 老师标签
   studentTag: {type: Number}, // 学生标签
   status: {type: Number, default: 0}, // 状态
-  classType: {type: Number,}, // 课类型
-  classTime: {type: Number,}, // 课时长
+  classType: {type: Number, required: [true, '课类型必填']}, // 课类型
+  classTime: {
+    type: Number, required: [true, '课时长必填'], validate: {
+      validator: function (val) {
+        if (!this.endTime || !this.startTime) return true
+        return this.endTime && this.startTime && (this.endTime.getTime() - this.startTime.getTime()) === val * 60 * 1000
+      },
+      message: "课时长和开始时间、结束时间不对应"
+    }
+  }, // 课时长
   remark: {type: String, default: '', trim: true}, // 备注
 }, {
   timestamps: true,
@@ -50,22 +63,25 @@ schema.static({
    * @param options
    */
   async findByActivateArea(this: Model<CourseDocument>, options: FindByActivateAreaOptions) {
-    return  findByActivateArea(this, options)
+    return findByActivateArea(this, options)
   },
   /**
    * 给定时间范围，查询有时间重叠的课程
-   * @param this 
-   * @param startTime 
-   * @param endTime 
+   * @param startTime
+   * @param endTime
+   * @param teacher
+   * @param student
    */
   async findByTimeArea(this: Model<CourseDocument>, startTime: Date | string | number, endTime: Date | string | number, teacher?: string, student?: string) {
     startTime = new Date(startTime)
     endTime = new Date(endTime)
-    const params: {$or: any, teacher?: string, student?: string} = { $or :[
-      { startTime: { $gte: startTime, $lt: endTime } },
-      { endTime: { $gt: startTime, $lte: endTime } },
-      { startTime: { $lte: startTime }, endTime: { $gte: endTime } }
-    ]}
+    const params: { $or: any, teacher?: string, student?: string } = {
+      $or: [
+        {startTime: {$gte: startTime, $lt: endTime}},
+        {endTime: {$gt: startTime, $lte: endTime}},
+        {startTime: {$lte: startTime}, endTime: {$gte: endTime}}
+      ]
+    }
     if (teacher) {
       params.teacher = teacher
     }
@@ -78,6 +94,7 @@ schema.static({
 
 interface CourseModel extends Model<CourseDocument> {
   findByActivateArea(options: FindByActivateAreaOptions): Promise<Array<CourseDocument>>
+
   findByTimeArea(startTime: Date | string | number, endTime: Date | string | number, teacher?: string, student?: string): Promise<Array<CourseDocument>>
 }
 

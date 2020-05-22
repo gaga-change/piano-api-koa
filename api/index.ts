@@ -39,6 +39,19 @@ app.use(api)
 // app.use(async (ctx) => {
 //   ctx.body = '钢琴 - 接口'
 // })
+app.use(async (ctx, next) => {
+  await next().catch(err => {
+    if (err.name === 'ValidationError') {
+      let megArr = Object.keys(err.errors).map(key => err.errors[key].message)
+      let error =  new Error(megArr.join(','))
+      error.status = 400
+      error.expose = true
+      return Promise.reject(error)
+    } else {
+      return Promise.reject(err)
+    }
+  })
+})
 // 异常监听
 app.on('error', (err: any) => {
   console.error(err)
