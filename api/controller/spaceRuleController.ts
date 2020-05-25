@@ -21,11 +21,19 @@ const cropAreaTime = (spaceAreas: Array<SpaceAreaDocument>, courses: Array<Cours
     const {startTime: st, endTime: et} = course
     let newTemp: { startTime: Date; endTime: Date; }[] = []
     spaceAreas.forEach(({startTime, endTime}) => {
-      if (startTime < st) {
-        newTemp.push({startTime, endTime: new Date(st.getTime() - 60 * 1000)})
-      }
-      if (et < endTime) {
-        newTemp.push({startTime: new Date(et.getTime() + 60 * 1000), endTime})
+      // 获取交集
+      const intersectionArea = [Math.max(startTime.getTime(), st.getTime()), Math.min(endTime.getTime(), et.getTime())]
+      // 判断交集是否成立
+      if(intersectionArea[1] > intersectionArea[0]) {
+        // 从area01中 删除交集
+        if (startTime.getTime() < intersectionArea[0]) {
+          newTemp.push({startTime, endTime: new Date(intersectionArea[0] - 60 * 1000)})
+        }
+        if (intersectionArea[1] < endTime.getTime()) {
+          newTemp.push({startTime: new Date(intersectionArea[1] + 60 * 1000), endTime})
+        }
+      } else {
+        newTemp.push({startTime, endTime})
       }
     })
     spaceAreas = newTemp
