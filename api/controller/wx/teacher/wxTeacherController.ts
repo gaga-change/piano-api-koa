@@ -36,7 +36,7 @@ export class WxTeacherController {
 
   @GetMapping('selfCode', [teacherAuth])
   async getSelfQrcode(ctx: Context) {
-    const teacher = await Teacher.findOne({openid: ctx.session.studentOpenid})
+    const teacher = await Teacher.findOne({openid: ctx.session.teacherOpenid})
     ctx.assert(teacher, 400, '用户未注册')
     if (!teacher.qrcodeTeacherTicket) {
       const token = await getToken(TEACHER_TYPE)

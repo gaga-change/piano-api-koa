@@ -19,6 +19,8 @@ const schema = new Schema({
   phone: {type: String,}, // 手机号码
   openid: {type: String,}, // wx openId
   remark: {type: String, default: '', trim: true}, // 备注
+  qrcodeTeacherTicket: {type: String},
+  qrcodeStudentTicket: {type: String},
 }, {
   timestamps: true,
   discriminatorKey: 'kind'

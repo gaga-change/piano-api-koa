@@ -1,7 +1,7 @@
 import Koa from 'koa'
 import mongoose from 'mongoose'
 import logger from 'koa-logger'
-import koaBody from 'koa-body'
+import bodyParser from 'koa-bodyparser'
 import session from 'koa-session'
 import  {PORT, MONGO_LINK} from './config'
 import schedule from './schedule'
@@ -30,7 +30,7 @@ app.keys = ['junn secret 4']
 // MongoDB 连接异常输出
 db.on('error', console.error.bind(console, 'connection error:'))
 // Body 解析
-app.use(koaBody({ jsonLimit: '10kb' }))
+app.use(bodyParser({ jsonLimit: '10kb' , enableTypes: ['json', 'form', 'xml']}))
 // Session 解析
 app.use(session(CONFIG, app))
 // 日志信息输出
@@ -38,7 +38,6 @@ app.use(logger())
 app.use(async (ctx, next) => {
   await next().catch(err => {
     if (err.name === 'ValidationError') {
-      console.log('???????????????')
       let megArr = Object.keys(err.errors).map(key => err.errors[key].message)
       return Promise.reject(new ThrowError(megArr.join(',')))
     } else {
