@@ -7,7 +7,7 @@ import {
   LEAVE_AREA_STATUS_READY,
   PERSON_STATUS_NO_PASS,
   PERSON_STATUS_PASS,
-  PERSON_STATUS_READY
+  PERSON_STATUS_READY, SHARE_TYPE_STUDENT, SHARE_TYPE_TEACHER
 } from "./const";
 
 export const PERSON_STATUS_MAP: Map<number, string> = new Map([
@@ -26,4 +26,9 @@ export const COURSE_STATUS_MAP: Map<number, string> = new Map([
   [COURSE_STATUS_READY, '待完成 '],
   [COURSE_STATUS_PASS, '已完成'],
   [COURSE_STATUS_NO_PASS, '已取消'],
+])
+
+export const SHARE_TYPE_MAP: Map<number, string> = new Map([
+  [SHARE_TYPE_TEACHER, '教师端'],
+  [SHARE_TYPE_STUDENT, '学生端'],
 ])

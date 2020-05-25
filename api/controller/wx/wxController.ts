@@ -87,21 +87,17 @@ export class WxController {
   /** 微信服务 */
   @PostMapping('server')
   async wxPostServer(ctx: Context) {
-
     const res: any = convert.xml2js(ctx.request.body, {compact: true})
     const event: string = res.xml.Event._cdata
     const msgType: string = res.xml.MsgType._cdata
     const fromUserName: string = res.xml.FromUserName._cdata
     const ticket: string | undefined = res.xml.Ticket && res.xml.Ticket._cdata
     if (msgType === 'event' && event === 'subscribe' && ticket) { // 订阅事件
-      console.log('===== person')
-      const person = await Person.findOne({qrcodeTeacherTicket: ticket}) // 分享的人
-      console.log('===== person', person && person.name)
+      const person = await Person.findOne({$or: [{qrcodeTeacherTicket: ticket}, {qrcodeStudentTicket: ticket}]}) // 分享的人
       if (person && person.openid !== fromUserName) { // 确定分享的人还在 并且不是本人
         const exist = await Share.findOne({shareOpenid: person.openid, subscribeOpenid: fromUserName})
         if (!exist) { // 确定没有重复，防止取消后重写关注
-          console.log('openid', person.openid)
-          await new Share({shareOpenid: person.openid, subscribeOpenid: fromUserName}).save()
+          await new Share({shareOpenid: person.openid, subscribeOpenid: fromUserName, type: person.qrcodeTeacherTicket === ticket ?  0: 1}).save()
         }
       }
     } else if (msgType === 'event' && event === 'unsubscribe') { // 取消订阅

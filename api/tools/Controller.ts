@@ -60,7 +60,7 @@ class Controller<T extends Document> {
       }
     })
     const res1 = this.Model.find(params)
-      .sort(this.defaultSort)
+      .sort(this.defaultSort || { createdAt: -1 })
       .limit(pageSize)
       .skip((page - 1) * pageSize)
     const res2 = this.Model.countDocuments(params)
