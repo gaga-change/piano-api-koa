@@ -3,6 +3,7 @@ import {informTeacherRegister} from "../pushMsg";
 import {Context} from "koa";
 import {PostMapping, RequestMapping} from "../../../desc";
 import {teacherAuth} from "../../../middleware/wx";
+import {PERSON_STATUS_READY} from "../../../config/const";
 
 @RequestMapping('/wx/teacher')
 export class WxTeacherController {
@@ -13,7 +14,7 @@ export class WxTeacherController {
   @PostMapping('register', [teacherAuth])
   async register(ctx: Context) {
     const { body } = ctx.request
-    body.status = 0 // 待审核
+    body.status = PERSON_STATUS_READY // 待审核
     let teacher: TeacherDocument | null = null
     if (body._id) {
       const _id = body._id
