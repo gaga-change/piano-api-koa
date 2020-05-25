@@ -26,7 +26,7 @@ export function isStudent(type: string) {
   return type === STUDENT_TYPE
 }
 
-export async function getToken(type: string) {
+export async function getToken(type: string): Promise<string> {
 
   let wxCacheToken = await WxCacheToken.findOne({ type })
   if (wxCacheToken === null) { // 若无，则建立
