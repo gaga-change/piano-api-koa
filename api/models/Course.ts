@@ -7,6 +7,7 @@ import {StudentDocument} from "./Student";
 import {SpaceRuleDocument} from "./SpaceRule";
 import {findByActivateArea, FindByActivateAreaOptions} from "../tools/aggregateConfig";
 import {initStartTimeAndEndTimeSchema, startTimeAndEndTimeSchema} from "./startTimeAndEndTimeSchema";
+import {COURSE_STATUS_MAP} from "../config/enums";
 
 export interface CourseDocument extends Document {
   startTime: Date
@@ -29,7 +30,7 @@ const schema = new Schema({
   student: {type: Schema.Types.ObjectId, ref: 'Student'},
   teacherTag: {type: Number}, // 老师标签
   studentTag: {type: Number}, // 学生标签
-  status: {type: Number, default: 0}, // 状态
+  status: {type: Number, default: 0, enum: [...COURSE_STATUS_MAP.keys()]}, // 状态
   classType: {type: Number, required: [true, '课类型必填']}, // 课类型
   classTime: {
     type: Number, required: [true, '课时长必填'], validate: {
