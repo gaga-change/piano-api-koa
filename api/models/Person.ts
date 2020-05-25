@@ -9,7 +9,8 @@ export interface PersonDocument extends Document {
   phone: string
   openid?: string
   remark?: string
-  qrcodeTicket?: string // 个人分享二维码 ticket
+  qrcodeTeacherTicket?: string // 个人分享二维码 ticket 老师端
+  qrcodeStudentTicket?: string // 个人分享二维码 ticket 学生端
 }
 
 const schema = new Schema({

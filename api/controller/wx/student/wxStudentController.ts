@@ -36,17 +36,20 @@ export class WxStudentController {
 
   @GetMapping('selfCode', [studentAuth])
   async getSelfQrcode(ctx: Context) {
-    const token = await getToken(STUDENT_TYPE)
     const student = await Student.findOne({openid: ctx.session.studentOpenid})
     ctx.assert(student, 400, '用户未注册')
-    if (!student.qrcodeTicket) {
-      const res: { ticket: string; expire_seconds: number; url: string } = await axios.post(`https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=${token}`, {
+    if (!student.qrcodeStudentTicket) {
+      const token = await getToken(STUDENT_TYPE)
+      const res: {data: { ticket: string; url: string }} = await axios.post(`https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=${token}`, {
         "action_name": "QR_LIMIT_SCENE",
-        "action_info": {"scene": {"scene_id": 123}}
+        "action_info": {"scene": {"scene_id": 1}}
       })
-      student.qrcodeTicket = res.ticket
+      student.qrcodeStudentTicket = res.data.ticket
       await student.save()
     }
-    ctx.body = `https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=${student.qrcodeTicket}`
+    ctx.body = {
+      student:
+        `https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=${student.qrcodeStudentTicket}`
+    }
   }
 }
