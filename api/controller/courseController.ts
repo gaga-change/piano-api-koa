@@ -4,6 +4,11 @@ import {DeleteMapping, GetMapping, Inject, PostMapping, PutMapping, RequestMappi
 import {Context} from "koa";
 import Controller from "../tools/Controller";
 import {checkAuth} from "../middleware/auth";
+import Person from "../models/Person";
+import {initHour, ONE_DAY_TIME} from "../tools/dateTools";
+import {TEACHER_DB_NAME} from "../config/dbName";
+import code from "../config/code";
+import {COURSE_STATUS_READY} from "../config/const";
 
 @RequestMapping('courses')
 export  class CourseController extends Controller<CourseDocument> {
@@ -20,6 +25,24 @@ export  class CourseController extends Controller<CourseDocument> {
     const {teacher, student} = ctx.query
     ctx.assert(teacher || student, 400, '参数异常')
     ctx.body = await Course.findByActivateArea({teacher, student})
+  }
+
+  /**
+   * 获取某人某天未开始的课程
+   * @param ctx
+   */
+  @GetMapping('findByPersonAndDay')
+  async findByPersonAndDay (ctx : Context) {
+    const {person : personId, date: dateStr} = ctx.query
+    const person = await  Person.findById(personId)
+    ctx.assert(person && dateStr, code.BadRequest, '参数异常')
+    const startTime = initHour(dateStr)
+    const endTime = new Date(startTime.getTime() + ONE_DAY_TIME)
+    ctx.body = await Course.find({
+      ...(person.kind === TEACHER_DB_NAME ? {teacher: person} : {student: person}),
+      startTime: { $gte: startTime, $lt: endTime },
+      status: COURSE_STATUS_READY
+    }).populate('teacher').populate('student')
   }
 
   /** 创建 */
