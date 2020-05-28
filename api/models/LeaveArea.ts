@@ -12,6 +12,7 @@ export interface LeaveAreaDocument extends Document{
   adverse: Schema.Types.ObjectId | PersonDocument | string
   status: number
   remark: string
+  reason: string
 }
 
 const schema = new Schema({
@@ -20,6 +21,7 @@ const schema = new Schema({
   adverse: { type: Schema.Types.ObjectId, ref: 'Person', required: true }, // 请假影响到的对方
   status: { type: Number, default: LEAVE_AREA_STATUS_READY, enum: [...LEAVE_AREA_STATUS_MAP.keys()]}, // 状态
   remark: { type: String, default: '', trim: true }, // 备注
+  reason: { type: String, default: '', trim: true }, // 理由
 }, {
   timestamps: true,
 })

@@ -22,6 +22,10 @@ import {STUDENT_MENU, TEACHER_MENU} from "../../config/menu";
 @RequestMapping('wx')
 export class WxController {
 
+  /**
+   * 微信公众号菜单创建
+   * @param ctx
+   */
   @GetMapping('createMenu')
   async createMenu(ctx: Context) {
     const teacherToken = await getToken(TEACHER_TYPE)
@@ -70,18 +74,16 @@ export class WxController {
       ctx.status = code.BadRequest
       ctx.body = res.data
     } else {
-      let userInfo: TeacherDocument | StudentDocument
       if (isTeacher(type)) {
         ctx.session.teacherOpenid = res.data.openid
-        userInfo = await Teacher.findOne({openid: res.data.openid})
       } else {
         ctx.session.studentOpenid = res.data.openid
-        userInfo = await Student.findOne({openid: res.data.openid})
       }
+      const user = await Person.findOne({openid: res.data.openid})
       ctx.body = {
         teacherOpenid: ctx.session && ctx.session.teacherOpenid,
         studentOpenid: ctx.session && ctx.session.studentOpenid,
-        userInfo
+        user
       }
     }
   }
