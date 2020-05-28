@@ -1,5 +1,13 @@
 import {Context} from "koa";
-import {getAppidAndsecret, isStudent, isTeacher, syncTags} from "../../tools/wxTools";
+import {
+  getAppidAndsecret,
+  getToken,
+  isStudent,
+  isTeacher,
+  STUDENT_TYPE,
+  syncTags,
+  TEACHER_TYPE
+} from "../../tools/wxTools";
 import code from "../../config/code";
 import axios from 'axios'
 import Teacher, {TeacherDocument} from "../../models/Teacher";
@@ -9,9 +17,25 @@ import {checkAuth} from "../../middleware/auth";
 import convert from 'xml-js'
 import Person from "../../models/Person";
 import Share from "../../models/Share";
+import {STUDENT_MENU, TEACHER_MENU} from "../../config/menu";
 
 @RequestMapping('wx')
 export class WxController {
+
+  @GetMapping('createMenu')
+  async createMenu(ctx: Context) {
+    const teacherToken = await getToken(TEACHER_TYPE)
+    const studentToken = await getToken(STUDENT_TYPE)
+
+    const res1 = await axios.post(`https://api.weixin.qq.com/cgi-bin/menu/create?access_token=${teacherToken}`, TEACHER_MENU)
+    const res2 = await axios.post(`https://api.weixin.qq.com/cgi-bin/menu/create?access_token=${studentToken}`, STUDENT_MENU)
+
+    ctx.body = {
+      teacher: res1.data,
+      student: res2.data
+    }
+  }
+
   /** 同步微信标签 */
   @GetMapping(':type/tagsSync', [checkAuth])
   async wxTagSync(ctx: Context) {
@@ -80,6 +104,7 @@ export class WxController {
     // var signature = ctx.query.signature;
     // var timestamp = ctx.query.timestamp;
     // var nonce     = ctx.query.nonce;
+    console.log('微信服务')
     ctx.body = ctx.query.echostr
 
   }
@@ -88,7 +113,8 @@ export class WxController {
   @PostMapping('server')
   async wxPostServer(ctx: Context) {
     const res: any = convert.xml2js(ctx.request.body, {compact: true})
-    const event: string = res.xml.Event._cdata
+    console.log(res.xml)
+    const event: string | undefined = res.xml.Event && res.xml.Event._cdata
     const msgType: string = res.xml.MsgType._cdata
     const fromUserName: string = res.xml.FromUserName._cdata
     const ticket: string | undefined = res.xml.Ticket && res.xml.Ticket._cdata
