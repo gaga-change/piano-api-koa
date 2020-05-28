@@ -76,8 +76,8 @@ schema.static({
     endTime = new Date(endTime)
     const params: { $or: any, teacher?: string, student?: string } = {
       $or: [
-        {startTime: {$gte: startTime, $lt: endTime}},
-        {endTime: {$gt: startTime, $lte: endTime}},
+        {startTime: {$gte: startTime, $lte: endTime}},
+        {endTime: {$gte: startTime, $lte: endTime}},
         {startTime: {$lte: startTime}, endTime: {$gte: endTime}}
       ]
     }
