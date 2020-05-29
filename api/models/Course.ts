@@ -1,4 +1,4 @@
-// 清单
+// 课程
 
 import mongoose, {Schema, Document, Model} from 'mongoose'
 import {initHour} from "../tools/dateTools";
@@ -60,9 +60,10 @@ schema.static({
   /**
    * 获取有效范围内的 所有课程
    * @param options
+   * @param appendQuery
    */
-  async findByActivateArea(this: Model<CourseDocument>, options: FindByActivateAreaOptions) {
-    return findByActivateArea(this, options)
+  async findByActivateArea(this: Model<CourseDocument>, options: FindByActivateAreaOptions, appendQuery:any = {}) {
+    return findByActivateArea(this, options, appendQuery)
   },
   /**
    * 给定时间范围，查询有时间重叠的课程
@@ -92,7 +93,7 @@ schema.static({
 })
 
 interface CourseModel extends Model<CourseDocument> {
-  findByActivateArea(options: FindByActivateAreaOptions): Promise<Array<CourseDocument>>
+  findByActivateArea(options: FindByActivateAreaOptions, appendQuery?: any): Promise<Array<CourseDocument>>
 
   findByTimeArea(startTime: Date | string | number, endTime: Date | string | number, teacher?: string, student?: string): Promise<Array<CourseDocument>>
 }

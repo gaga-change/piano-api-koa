@@ -15,10 +15,13 @@ export const studentAuth: any = async (ctx: Context, next: Next) => {
 }
 /** 微信用户校验 */
 export const wxAuth: any = async (ctx: Context, next: Next) => {
+  const openid = ctx.session.studentOpenid || ctx.session.teacherOpenid
+  ctx.assert(openid, code.Unauthorized, "用户未登录")
   const {user: userInfo} = ctx.session
-  ctx.assert(userInfo, code.Unauthorized, "用户未提交资料")
+  ctx.assert(userInfo, code.Forbidden, "用户未提交资料")
   const user = await Person.findById(userInfo.id)
-  ctx.assert(user.status === PERSON_STATUS_PASS, code.Unauthorized, "用户暂未审核通过")
+  ctx.assert(user.status === PERSON_STATUS_PASS, code.Forbidden, "用户暂未审核通过")
   ctx.session.user = user
   ctx.state.user = user
+  await next()
 }

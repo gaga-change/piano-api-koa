@@ -7,6 +7,7 @@ import {Document, Model} from "mongoose";
 import {STUDENT_DB_NAME, TEACHER_DB_NAME} from "../config/dbName";
 import ThrowError from "./ThrowError";
 import {getActivityArea} from "./dateTools";
+import {StudentDocument, TeacherDocument} from "../models";
 
 export const findIdRemovedConfig = (target: String, collectionName: String) => {
 
@@ -68,16 +69,17 @@ export const removeNoTeacherOrStudent = async (model: Model<Document>) => {
 }
 
 export interface FindByActivateAreaOptions {
-  teacher?: string
-  student?: string
+  teacher?: string | TeacherDocument
+  student?: string | StudentDocument
 }
 
 /**
  * 获取有效时间范围内的文档
  * @param model
  * @param options
+ * @param appendQuery
  */
-export const findByActivateArea = async (model: Model<Document>, options: FindByActivateAreaOptions) => {
+export const findByActivateArea = async (model: Model<Document>, options: FindByActivateAreaOptions, appendQuery: any = {}) => {
   const {teacher, student} = options
   if (!teacher && !student) {
     throw new ThrowError("参数有误")
@@ -85,8 +87,8 @@ export const findByActivateArea = async (model: Model<Document>, options: FindBy
   const isTeacher = !!teacher
   const [startDate, endDate] = getActivityArea()
   if (isTeacher) {
-    return model.find({startTime: {$gte: startDate, $lt: endDate}, teacher}).sort("startTime").populate('student').populate('teacher')
+    return model.find({startTime: {$gte: startDate, $lt: endDate}, teacher, ...appendQuery}).sort("startTime").populate('student').populate('teacher')
   } else {
-    return model.find({startTime: {$gte: startDate, $lt: endDate}, student}).sort("startTime").populate('student').populate('teacher')
+    return model.find({startTime: {$gte: startDate, $lt: endDate}, student, ...appendQuery}).sort("startTime").populate('student').populate('teacher')
   }
 }

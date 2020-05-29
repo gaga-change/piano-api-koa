@@ -6,11 +6,11 @@ export const TEACHER_MENU = {
         {
           "type": "view",
           "name": "资料填写",
-          "url": "http://page.wx.carry.junn.top/teacher/teacherRegister"
+          "url": "http://page.teacher.wx.carry.junn.top/teacher/teacherRegister"
         }, {
           "type": "view",
           "name": "了解Carry陪练",
-          "url": "http://page.wx.carry.junn.top/teacher/describe"
+          "url": "http://page.teacher.wx.carry.junn.top/teacher/describe"
         }
       ]
     },
@@ -20,17 +20,17 @@ export const TEACHER_MENU = {
         {
           "type": "view",
           "name": "邀请教师海报",
-          "url": "http://page.wx.carry.junn.top/teacher/inviteTeacher"
+          "url": "http://page.teacher.wx.carry.junn.top/teacher/inviteTeacher"
         },
         {
           "type": "view",
           "name": "邀请学生海报",
-          "url": "http://page.wx.carry.junn.top/teacher/inviteStudent"
+          "url": "http://page.teacher.wx.carry.junn.top/teacher/inviteStudent"
         },
         {
           "type": "view",
           "name": "奖金细则",
-          "url": "http://page.wx.carry.junn.top/teacher/teacherBonus"
+          "url": "http://page.teacher.wx.carry.junn.top/teacher/teacherBonus"
         }
       ]
     },
@@ -40,22 +40,22 @@ export const TEACHER_MENU = {
         {
           "type": "view",
           "name": "我的课表",
-          "url": "http://page.wx.carry.junn.top/teacher/teacherCourse"
+          "url": "http://page.teacher.wx.carry.junn.top/teacher/teacherCourse"
         },
         {
           "type": "view",
           "name": "我的薪资",
-          "url": "http://page.wx.carry.junn.top/teacher/teacherWage"
+          "url": "http://page.teacher.wx.carry.junn.top/teacher/teacherWage"
         },
         {
           "type": "view",
           "name": "奖金与规章",
-          "url": "http://page.wx.carry.junn.top/teacher/teacherSystem"
+          "url": "http://page.teacher.wx.carry.junn.top/teacher/teacherSystem"
         },
         {
           "type": "view",
           "name": "请假与离职",
-          "url": "http://page.wx.carry.junn.top/teacher/teacherLeave"
+          "url": "http://page.teacher.wx.carry.junn.top/teacher/teacherLeave"
         }
       ]
     }
@@ -70,7 +70,7 @@ export const STUDENT_MENU = {
         {
           "type": "view",
           "name": "资料填写",
-          "url": "http://page.wx.carry.junn.top/student/studentRegister"
+          "url": "http://page.student.wx.carry.junn.top/student/studentRegister"
         },
       ]
     },
@@ -80,7 +80,7 @@ export const STUDENT_MENU = {
         {
           "type": "view",
           "name": "邀请海报",
-          "url": "http://page.wx.carry.junn.top/student/InviteStudent"
+          "url": "http://page.student.wx.carry.junn.top/student/InviteStudent"
         },
       ]
     },
