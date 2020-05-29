@@ -2,7 +2,7 @@ import Teacher, {TeacherDocument} from "../../../models/Teacher";
 import {informTeacherRegister} from "../pushMsg";
 import {Context} from "koa";
 import {GetMapping, PostMapping, RequestMapping} from "../../../desc";
-import {teacherAuth} from "../../../middleware/wx";
+import {wxAuth, wxCheckOpenid} from "../../../middleware/wx";
 import {PERSON_STATUS_READY} from "../../../config/const";
 import {getToken, STUDENT_TYPE, TEACHER_TYPE} from "../../../tools/wxTools";
 import axios from "axios";
@@ -13,10 +13,12 @@ export class WxTeacherController {
    * 手机端老师注册
    * @param ctx
    */
-  @PostMapping('register', [teacherAuth])
+  @PostMapping('register', [wxCheckOpenid])
   async register(ctx: Context) {
     const {body} = ctx.request
     body.status = PERSON_STATUS_READY // 待审核
+    body.openid = ctx.openid
+    if (ctx.state.user) body._id = ctx.state.user._id
     let teacher: TeacherDocument | null = null
     if (body._id) {
       const _id = body._id
@@ -34,10 +36,9 @@ export class WxTeacherController {
   }
 
 
-  @GetMapping('selfCode', [teacherAuth])
+  @GetMapping('selfCode', [wxAuth])
   async getSelfQrcode(ctx: Context) {
-    const teacher = await Teacher.findOne({openid: ctx.session.teacherOpenid})
-    ctx.assert(teacher, 400, '用户未注册')
+    const teacher: TeacherDocument = ctx.state.user
     if (!teacher.qrcodeTeacherTicket) {
       const token = await getToken(TEACHER_TYPE)
       const res: { data: { ticket: string; url: string } } = await axios.post(`https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=${token}`, {

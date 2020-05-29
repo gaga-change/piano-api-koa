@@ -36,6 +36,10 @@ app.use(session(CONFIG, app))
 // 日志信息输出
 app.use(logger())
 app.use(async (ctx, next) => {
+  const header = ctx.request.header
+  const host = header['x-forwarded-host']
+  ctx.isTeacher = host.includes('teacher')
+  ctx.openid = ctx.session.openid
   await next().catch(err => {
     if (err.name === 'ValidationError') {
       let megArr = Object.keys(err.errors).map(key => err.errors[key].message)

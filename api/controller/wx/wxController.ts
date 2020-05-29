@@ -2,7 +2,6 @@ import {Context} from "koa";
 import {
   getAppidAndsecret,
   getToken,
-  isTeacher,
   STUDENT_TYPE,
   syncTags,
   TEACHER_TYPE
@@ -15,7 +14,7 @@ import convert from 'xml-js'
 import Person from "../../models/Person";
 import Share from "../../models/Share";
 import {STUDENT_MENU, TEACHER_MENU} from "../../config/menu";
-import {wxAuth} from "../../middleware/wx";
+import {wxAuth, wxCheckOpenid} from "../../middleware/wx";
 import Course from "../../models/Course";
 import {personToTeacherOrStudent} from "../../tools/person";
 import {COURSE_STATUS_READY} from "../../config/const";
@@ -59,19 +58,17 @@ export class WxController {
   }
 
   /** 微信登录 */
-  @GetMapping(':type/login')
+  @GetMapping('login')
   async wxLogin(ctx: Context) {
-    const {type} = ctx.params
-    const {appid, secret} = getAppidAndsecret(type)
+    const {isTeacher, openid} = ctx
     // 已登录，直接返回信息
-    const openid = isTeacher(type) ? ctx.session.teacherOpenid : ctx.session.studentOpenid
     if (openid) {
       ctx.body = {
-        teacherOpenid: ctx.session.teacherOpenid,
-        studentOpenid: ctx.session.studentOpenid,
+        openid,
         user: await Person.findOne({openid})
       }
     } else {
+      const {appid, secret} = getAppidAndsecret(isTeacher)
       const {code: wxCode} = ctx.query
       ctx.assert(wxCode, code.BadRequest, "需要传递参数 code")
       const res = await axios.get('https://api.weixin.qq.com/sns/oauth2/access_token', {
@@ -82,19 +79,14 @@ export class WxController {
           grant_type: 'authorization_code'
         }
       })
-      if (!res.data.openid) {
+      if (!res.data.openid) { // 报错返回报错内容
         ctx.status = code.BadRequest
         ctx.body = res.data
       } else {
-        if (isTeacher(type)) {
-          ctx.session.teacherOpenid = res.data.openid
-        } else {
-          ctx.session.studentOpenid = res.data.openid
-        }
+        ctx.session.openid = res.data.openid
         const user = await Person.findOne({openid: res.data.openid})
         ctx.body = {
-          teacherOpenid: ctx.session && ctx.session.teacherOpenid,
-          studentOpenid: ctx.session && ctx.session.studentOpenid,
+          openid: res.data.openid,
           user
         }
       }
@@ -102,15 +94,11 @@ export class WxController {
   }
 
   /** 获取 openid */
-  @GetMapping('account')
+  @GetMapping('account', [wxCheckOpenid])
   async wxAccount(ctx: Context) {
-    console.log(ctx.request.hostname)
-
     ctx.body = {
-      teacherOpenid: ctx.session && ctx.session.teacherOpenid,
-      studentOpenid: ctx.session && ctx.session.studentOpenid,
-      user: ctx.session && ctx.session.user,
-      test: ctx.request
+      openid: ctx.openid,
+      user: ctx.state.user
     }
   }
 
