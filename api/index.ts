@@ -38,7 +38,7 @@ app.use(logger())
 app.use(async (ctx, next) => {
   const header = ctx.request.header
   const host = header['x-forwarded-host']
-  ctx.isTeacher = host.includes('teacher')
+  ctx.isTeacher = host && host.includes('teacher')
   ctx.openid = ctx.session.openid
   await next().catch(err => {
     if (err.name === 'ValidationError') {

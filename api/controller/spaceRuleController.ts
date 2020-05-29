@@ -9,6 +9,7 @@ import {mongoSession} from "../middleware/mongoSession";
 import {STUDENT_DB_NAME, TEACHER_DB_NAME} from "../config/dbName";
 import Course, {CourseDocument} from "../models/Course";
 import {copyFullYears, ONE_DAY_TIME} from "../tools/dateTools";
+import {COURSE_PERSON_STATUS_LEAVE, COURSE_STATUS_NO_PASS, COURSE_STATUS_READY} from "../config/const";
 
 interface SpaceAreaDocument {
   startTime: Date
@@ -107,7 +108,8 @@ export class SpaceRuleController extends Controller<SpaceRuleDocument> {
     // 查询有交集的课程，进行裁剪
     const courses = await Course.find({
       startTime: {$gte: startTime},
-      endTime: {$lt: endTime}, ...(person.kind === STUDENT_DB_NAME ? {student: person} : {teacher: person})
+      endTime: {$lt: endTime}, ...(person.kind === STUDENT_DB_NAME ? {student: person} : {teacher: person}),
+      status: COURSE_STATUS_READY
     })
     ctx.body = cropAreaTime(spaceAreas, courses).map(v => ({...v, person}))
   }
@@ -138,8 +140,19 @@ export class SpaceRuleController extends Controller<SpaceRuleDocument> {
       startTime.setFullYear(...yearMonthDate)
       endTime.setFullYear(...yearMonthDate)
       const person: any = spaceRule.person
-      const courses = await Course.find({
+      const courses01 = await Course.find({
         ...(person.kind === STUDENT_DB_NAME ? {student: person} : {teacher: person}),
+        status: COURSE_STATUS_READY,
+        $or: [
+          {startTime: {$gte: startTime, $lt: endTime}},
+          {endTime: {$gt: startTime, $lte: endTime}},
+          {startTime: {$lte: startTime}, endTime: {$gte: endTime}}
+        ]
+      })
+      // 还要过滤个人请假的课程
+      const courses02 = await Course.find({
+        ...(person.kind === STUDENT_DB_NAME ? {student: person, studentStatus: COURSE_PERSON_STATUS_LEAVE} : {teacher: person, teacherStatus: COURSE_PERSON_STATUS_LEAVE}),
+        status: COURSE_STATUS_NO_PASS,
         $or: [
           {startTime: {$gte: startTime, $lt: endTime}},
           {endTime: {$gt: startTime, $lte: endTime}},
@@ -147,7 +160,7 @@ export class SpaceRuleController extends Controller<SpaceRuleDocument> {
         ]
       })
       let spaceAreas: Array<SpaceAreaDocument> = [{startTime, endTime}]
-      out.push(...cropAreaTime(spaceAreas, courses).map(v => ({...v, person})))
+      out.push(...cropAreaTime(spaceAreas, [...courses01, ...courses02]).map(v => ({...v, person})))
     }
     console.log(out.map(v => ({...v, person: v.person})))
     // 保留交集

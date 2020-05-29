@@ -52,9 +52,9 @@ export  class CourseController extends Controller<CourseDocument> {
     ctx.assert(body.teacher && body.student, 400, '参数异常')
     // 判断是否重叠
     const {startTime, endTime, teacher, student} = body
-    const coursesByStudent = await Course.findByTimeArea(startTime, endTime, undefined, student )
+    const coursesByStudent = await Course.findByTimeArea(startTime, endTime, undefined, student, { status:  COURSE_STATUS_READY })
     ctx.assert(coursesByStudent.length === 0, 400, '学生课程时间有重叠')
-    const courseByTeacher =  await Course.findByTimeArea(startTime, endTime, teacher, undefined )
+    const courseByTeacher =  await Course.findByTimeArea(startTime, endTime, teacher, undefined, {status:  COURSE_STATUS_READY } )
     ctx.assert(courseByTeacher.length === 0, 400, '教师课程时间有重叠')
     ctx.body = await Course.create(body)
   }
@@ -73,10 +73,11 @@ export  class CourseController extends Controller<CourseDocument> {
     const body = ctx.request.body;
     // 判断是否重叠
     const {startTime, endTime, teacher, student} = body
-    const coursesByStudent = await Course.findByTimeArea(startTime, endTime, undefined, student )
-    ctx.assert(coursesByStudent.length <= 1, 400, '学生课程时间有重叠')
-    const courseByTeacher =  await Course.findByTimeArea(startTime, endTime, teacher, undefined )
-    ctx.assert(courseByTeacher.length <= 1, 400, '教师课程时间有重叠')
+    // 查询和非本课程的其他课程 是否有重叠，排除对方请假的
+    const coursesByStudent = await Course.findByTimeArea(startTime, endTime, undefined, student , {_id: {$ne: id}, status:  COURSE_STATUS_READY })
+    ctx.assert(coursesByStudent.length === 0 , 400, '学生课程时间有重叠')
+    const courseByTeacher =  await Course.findByTimeArea(startTime, endTime, teacher, undefined , {_id: {$ne: id}, status:  COURSE_STATUS_READY  })
+    ctx.assert(courseByTeacher.length === 1, 400, '教师课程时间有重叠')
     ctx.body =   await this.Model.updateOne({_id: id}, body)
   }
 

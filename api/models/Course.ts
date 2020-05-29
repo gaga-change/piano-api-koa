@@ -7,7 +7,7 @@ import {StudentDocument} from "./Student";
 import {SpaceRuleDocument} from "./SpaceRule";
 import {findByActivateArea, FindByActivateAreaOptions} from "../tools/aggregateConfig";
 import {initStartTimeAndEndTimeSchema, startTimeAndEndTimeSchema} from "./startTimeAndEndTimeSchema";
-import {COURSE_STATUS_MAP} from "../config/enums";
+import {COURSE_PERSON_STATUS_MAP, COURSE_STATUS_MAP} from "../config/enums";
 
 export interface CourseDocument extends Document {
   startTime: Date
@@ -16,8 +16,8 @@ export interface CourseDocument extends Document {
   student?: Schema.Types.ObjectId | StudentDocument | string
   teacherSpaceRule?: Schema.Types.ObjectId | SpaceRuleDocument | string
   studentSpaceRule?: Schema.Types.ObjectId | SpaceRuleDocument | string
-  teacherTag?: number
-  studentTag?: number
+  teacherStatus: number
+  studentStatus: number
   status: number
   classType?: number
   classTime?: number
@@ -28,8 +28,8 @@ const schema = new Schema({
   ...startTimeAndEndTimeSchema,
   teacher: {type: Schema.Types.ObjectId, ref: 'Teacher'},
   student: {type: Schema.Types.ObjectId, ref: 'Student'},
-  teacherTag: {type: Number}, // 老师标签
-  studentTag: {type: Number}, // 学生标签
+  teacherStatus: {type: Number, default: 0, enum: [...COURSE_PERSON_STATUS_MAP.keys()]}, // 老师状态
+  studentStatus: {type: Number, default: 0, enum: [...COURSE_PERSON_STATUS_MAP.keys()]}, // 学生状态
   status: {type: Number, default: 0, enum: [...COURSE_STATUS_MAP.keys()]}, // 状态
   classType: {type: Number, required: [true, '课类型必填']}, // 课类型
   classTime: {
@@ -71,8 +71,9 @@ schema.static({
    * @param endTime
    * @param teacher
    * @param student
+   * @param appendQuery
    */
-  async findByTimeArea(this: Model<CourseDocument>, startTime: Date | string | number, endTime: Date | string | number, teacher?: string, student?: string) {
+  async findByTimeArea(this: Model<CourseDocument>, startTime: Date | string | number, endTime: Date | string | number, teacher?: string, student?: string, appendQuery:any= {}) {
     startTime = new Date(startTime)
     endTime = new Date(endTime)
     const params: { $or: any, teacher?: string, student?: string } = {
@@ -88,14 +89,14 @@ schema.static({
     if (student) {
       params.student = student
     }
-    return this.find(params)
+    return this.find({...params, ...appendQuery})
   }
 })
 
 interface CourseModel extends Model<CourseDocument> {
   findByActivateArea(options: FindByActivateAreaOptions, appendQuery?: any): Promise<Array<CourseDocument>>
 
-  findByTimeArea(startTime: Date | string | number, endTime: Date | string | number, teacher?: string, student?: string): Promise<Array<CourseDocument>>
+  findByTimeArea(startTime: Date | string | number, endTime: Date | string | number, teacher?: string, student?: string, appendQuery?: any): Promise<Array<CourseDocument>>
 }
 
 export default <CourseModel>mongoose.model<CourseDocument>('Course', schema, 'piano_space_course');

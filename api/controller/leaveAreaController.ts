@@ -3,7 +3,7 @@ import Controller from "../tools/Controller";
 import {DeleteMapping, GetMapping, Inject, PostMapping, PutMapping, RequestMapping} from "../desc";
 import {Context} from "koa";
 import {checkAuth} from "../middleware/auth";
-import {COURSE_STATUS_NO_PASS, LEAVE_AREA_STATUS_PASS} from "../config/const";
+import {COURSE_PERSON_STATUS_LEAVE, COURSE_STATUS_NO_PASS, LEAVE_AREA_STATUS_PASS} from "../config/const";
 import Course from "../models/Course";
 import Person from "../models/Person";
 import {TEACHER_DB_NAME} from "../config/dbName";
@@ -21,10 +21,10 @@ const passLeaveArea = async (leaveArea: LeaveAreaDocument) => {
       let adverse
       if (person.kind === TEACHER_DB_NAME) { // 通过后把课程的对象删除
         adverse = course.student
-        course.student = undefined // 老师请假 则解除学生的课程绑定
+        course.teacherStatus = COURSE_PERSON_STATUS_LEAVE
       } else {
-        adverse = course.student
-        course.student = undefined
+        adverse = course.teacher
+        course.studentStatus = COURSE_PERSON_STATUS_LEAVE
       }
       course.status = COURSE_STATUS_NO_PASS // 课程状态改为已取消
       leaveArea.adverse = adverse
