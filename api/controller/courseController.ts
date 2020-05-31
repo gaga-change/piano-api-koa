@@ -9,6 +9,7 @@ import {initHour, ONE_DAY_TIME} from "../tools/dateTools";
 import {TEACHER_DB_NAME} from "../config/dbName";
 import code from "../config/code";
 import {COURSE_STATUS_READY} from "../config/const";
+import ClassTime from "../models/ClassTime";
 
 @RequestMapping('courses')
 export  class CourseController extends Controller<CourseDocument> {
@@ -56,6 +57,7 @@ export  class CourseController extends Controller<CourseDocument> {
     ctx.assert(coursesByStudent.length === 0, 400, '学生课程时间有重叠')
     const courseByTeacher =  await Course.findByTimeArea(startTime, endTime, teacher, undefined, {status:  COURSE_STATUS_READY } )
     ctx.assert(courseByTeacher.length === 0, 400, '教师课程时间有重叠')
+    ctx.assert(await Course.checkTimeArea(startTime, endTime, body.classTime), code.BadRequest, '开始时间与结束时间与课时对应不上')
     ctx.body = await Course.create(body)
   }
 
@@ -78,7 +80,10 @@ export  class CourseController extends Controller<CourseDocument> {
     ctx.assert(coursesByStudent.length === 0 , 400, '学生课程时间有重叠')
     const courseByTeacher =  await Course.findByTimeArea(startTime, endTime, teacher, undefined , {_id: {$ne: id}, status:  COURSE_STATUS_READY  })
     ctx.assert(courseByTeacher.length === 1, 400, '教师课程时间有重叠')
-    ctx.body =   await this.Model.updateOne({_id: id}, body)
+    ctx.assert(await Course.checkTimeArea(startTime, endTime, body.classTime), code.BadRequest, '开始时间与结束时间与课时对应不上')
+    const classTime = await ClassTime.findOne(body.classTime)
+    ctx.assert(classTime, code.BadRequest, '请选择课时长')
+    ctx.body = await this.Model.updateOne({_id: id}, body)
   }
 
   @GetMapping(':id')
@@ -103,6 +108,8 @@ export  class CourseController extends Controller<CourseDocument> {
       .limit(pageSize)
       .populate({path: 'teacher', select: 'name'})
       .populate({path: 'student', select: 'name'})
+      .populate({path: 'classType', select: 'name'})
+      .populate({path: 'classTime', select: 'name time'})
       .skip((page - 1) * pageSize)
     const res2 = this.Model.countDocuments(params)
     ctx.body = {
