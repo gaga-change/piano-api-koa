@@ -1,6 +1,7 @@
 import WxCacheToken from '../models/WxCacheToken'
 import WxCacheTags from '../models/WxCacheTags'
 import axios from 'axios'
+import myAssert from "./myAssert";
 
 export  const TEACHER_TYPE = 'teacher'
 export  const STUDENT_TYPE = 'student'
@@ -44,9 +45,8 @@ export async function getToken(type: string): Promise<string> {
     console.log("token缓存失效或未读取，重新获取", new Date().toLocaleString())
     const { appid, secret } = getAppidAndsecret(type)
     const { data } = await axios.get(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appid}&secret=${secret}`)
-    const token = data.access_token
-    console.log(token)
-    wxCacheToken.token = token
+    myAssert(data.access_token, data.errmsg || '获取token报错', 500)
+    wxCacheToken.token = data.access_token
     await wxCacheToken.save()
   }
   return wxCacheToken.token

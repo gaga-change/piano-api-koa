@@ -40,7 +40,7 @@ export class WxController {
   async createMenu(ctx: Context) {
     const teacherToken = await getToken(TEACHER_TYPE)
     const studentToken = await getToken(STUDENT_TYPE)
-
+    console.log(teacherToken, studentToken)
     const res1 = await axios.post(`https://api.weixin.qq.com/cgi-bin/menu/create?access_token=${teacherToken}`, TEACHER_MENU)
     const res2 = await axios.post(`https://api.weixin.qq.com/cgi-bin/menu/create?access_token=${studentToken}`, STUDENT_MENU)
 
