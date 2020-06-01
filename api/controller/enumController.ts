@@ -1,8 +1,5 @@
-import Enums, {EnumsDocument} from "../models/Enums";
-import Controller from "../tools/Controller";
-import Application, {Context} from "koa";
-import {DeleteMapping, GetMapping, Inject, PostMapping, PutMapping, RequestMapping} from "../desc";
-import {checkAdmin, checkAuth} from "../middleware/auth";
+import {Context} from "koa";
+import { GetMapping,  RequestMapping} from "../desc";
 import * as localEnums from '../config/enums'
 import Dict from "../models/Dict";
 
@@ -11,24 +8,7 @@ interface enums {
 }
 
 @RequestMapping('enums')
-export class EnumsController extends Controller<EnumsDocument> {
-  @Inject(Enums)
-  Model: any
-
-  @PostMapping('', [checkAuth, checkAdmin])
-  async create(ctx: Application.Context): Promise<void> {
-    await super.create(ctx);
-  }
-
-  @DeleteMapping(':id', [checkAuth, checkAdmin])
-  async destroy(ctx: Application.Context): Promise<void> {
-    await super.destroy(ctx);
-  }
-
-  @PutMapping(':id', [checkAuth, checkAdmin])
-  async update(ctx: Application.Context): Promise<void> {
-    await super.update(ctx);
-  }
+export class EnumsController {
 
   /** 获取所有枚举 */
   @GetMapping('enumsTotal')
@@ -63,18 +43,7 @@ export class EnumsController extends Controller<EnumsDocument> {
       .project({name: "$_id", _id: 0, keyValue: 1})
     ctx.body = [
       ...locals,
-      ...await Enums.find({}),
       ...dict
     ]
-  }
-
-  @GetMapping(':id',)
-  async show(ctx: Application.Context): Promise<void> {
-    await super.show(ctx);
-  }
-
-  @GetMapping('')
-  async index(ctx: Application.Context): Promise<void> {
-    await super.index(ctx);
   }
 }

@@ -4,7 +4,6 @@ import mongoose, {Schema, Document, Model} from 'mongoose'
 import {initHour} from "../tools/dateTools";
 import {TeacherDocument} from "./Teacher";
 import {StudentDocument} from "./Student";
-import {SpaceRuleDocument} from "./SpaceRule";
 import {findByActivateArea, FindByActivateAreaOptions} from "../tools/aggregateConfig";
 import {initStartTimeAndEndTimeSchema, startTimeAndEndTimeSchema} from "./startTimeAndEndTimeSchema";
 import {COURSE_PERSON_STATUS_MAP, COURSE_STATUS_MAP} from "../config/enums";
@@ -90,7 +89,7 @@ schema.static({
    * @param classTime
    */
   async checkTimeArea(this: Model<CourseDocument>, startTime: Date | string | number, endTime: Date | string | number, classTime: any): Promise<boolean> {
-    const ct = await ClassTime.findOne(classTime)
+    const ct = await ClassTime.findById(classTime)
     if (!ct) {
       return false
     } else {

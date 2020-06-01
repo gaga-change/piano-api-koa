@@ -50,14 +50,17 @@ export  class CourseController extends Controller<CourseDocument> {
   @PostMapping('', [checkAuth,])
   async create(ctx: Context) {
     const body = ctx.request.body
-    ctx.assert(body.teacher && body.student, 400, '参数异常')
     // 判断是否重叠
-    const {startTime, endTime, teacher, student} = body
+    const {startTime, teacher, student} = body
+    ctx.assert(startTime && teacher && student && body.classTime, 400, '参数异常')
+    // 手动计算结束事件
+    const classTime = await ClassTime.findById(body.classTime)
+    ctx.assert(classTime, code.BadRequest, '请选择课时长')
+    const endTime = new Date(new Date(startTime).getTime() + classTime.time * 60 * 1000)
     const coursesByStudent = await Course.findByTimeArea(startTime, endTime, undefined, student, { status:  COURSE_STATUS_READY })
     ctx.assert(coursesByStudent.length === 0, 400, '学生课程时间有重叠')
     const courseByTeacher =  await Course.findByTimeArea(startTime, endTime, teacher, undefined, {status:  COURSE_STATUS_READY } )
     ctx.assert(courseByTeacher.length === 0, 400, '教师课程时间有重叠')
-    ctx.assert(await Course.checkTimeArea(startTime, endTime, body.classTime), code.BadRequest, '开始时间与结束时间与课时对应不上')
     ctx.body = await Course.create(body)
   }
 
@@ -74,15 +77,17 @@ export  class CourseController extends Controller<CourseDocument> {
     const {id} = ctx.params;
     const body = ctx.request.body;
     // 判断是否重叠
-    const {startTime, endTime, teacher, student} = body
+    const {startTime, teacher, student} = body
+    ctx.assert(startTime && teacher && student && body.classTime, 400, '参数异常')
+    // 手动计算结束事件
+    const classTime = await ClassTime.findById(body.classTime)
+    ctx.assert(classTime, code.BadRequest, '请选择课时长')
+    const endTime = new Date(new Date(startTime).getTime() + classTime.time * 60 * 1000)
     // 查询和非本课程的其他课程 是否有重叠，排除对方请假的
     const coursesByStudent = await Course.findByTimeArea(startTime, endTime, undefined, student , {_id: {$ne: id}, status:  COURSE_STATUS_READY })
     ctx.assert(coursesByStudent.length === 0 , 400, '学生课程时间有重叠')
     const courseByTeacher =  await Course.findByTimeArea(startTime, endTime, teacher, undefined , {_id: {$ne: id}, status:  COURSE_STATUS_READY  })
-    ctx.assert(courseByTeacher.length === 1, 400, '教师课程时间有重叠')
-    ctx.assert(await Course.checkTimeArea(startTime, endTime, body.classTime), code.BadRequest, '开始时间与结束时间与课时对应不上')
-    const classTime = await ClassTime.findOne(body.classTime)
-    ctx.assert(classTime, code.BadRequest, '请选择课时长')
+    ctx.assert(courseByTeacher.length === 0, 400, '教师课程时间有重叠')
     ctx.body = await this.Model.updateOne({_id: id}, body)
   }
 

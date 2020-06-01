@@ -1,4 +1,3 @@
-export * from './Enums'
 export *  from './Teacher'
 export * from './Student'
 export *  from './Course'
