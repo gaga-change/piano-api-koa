@@ -2,12 +2,13 @@ import Controller from "../../tools/Controller";
 import {GetMapping, Inject, PostMapping, PutMapping, RequestMapping} from "../../desc";
 import {Context} from "koa";
 import {checkAuth} from "../../middleware/auth";
-import TeacherType, {TeacherTypeDocument} from "../../models/TeacherType";
+import Combo from "../../models/Combo";
+import {ComboDocument} from "../../models/Combo";
 
-@RequestMapping('teacherTypes')
-export class TeacherTypeController extends Controller<TeacherTypeDocument>{
+@RequestMapping('combos')
+export class ComboController extends Controller<ComboDocument>{
 
-  @Inject(TeacherType)
+  @Inject(Combo)
   Model: any
 
   @Inject({ disabled: 1, createdAt: -1, })
