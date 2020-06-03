@@ -90,12 +90,12 @@ export const STUDENT_MENU = {
         {
           "type": "view",
           "name": "我的课表",
-          "url": "http://page.teacher.wx.carry.junn.top/showCourse"
+          "url": "http://page.student.wx.carry.junn.top/showCourse"
         },
         {
           "type": "view",
           "name": "请假",
-          "url": "http://page.teacher.wx.carry.junn.top/leaveList"
+          "url": "http://page.student.wx.carry.junn.top/leaveList"
         }
       ]
     }
