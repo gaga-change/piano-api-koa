@@ -40,7 +40,7 @@ export const TEACHER_MENU = {
         {
           "type": "view",
           "name": "我的课表",
-          "url": "http://page.teacher.wx.carry.junn.top/teacher/teacherCourse"
+          "url": "http://page.teacher.wx.carry.junn.top/showCourse"
         },
         {
           "type": "view",
@@ -54,8 +54,8 @@ export const TEACHER_MENU = {
         },
         {
           "type": "view",
-          "name": "请假与离职",
-          "url": "http://page.teacher.wx.carry.junn.top/teacher/teacherLeave"
+          "name": "请假",
+          "url": "http://page.teacher.wx.carry.junn.top/leaveList"
         }
       ]
     }
@@ -84,5 +84,20 @@ export const STUDENT_MENU = {
         },
       ]
     },
+    {
+      "name": "我的",
+      "sub_button": [
+        {
+          "type": "view",
+          "name": "我的课表",
+          "url": "http://page.teacher.wx.carry.junn.top/showCourse"
+        },
+        {
+          "type": "view",
+          "name": "请假",
+          "url": "http://page.teacher.wx.carry.junn.top/leaveList"
+        }
+      ]
+    }
   ]
 }

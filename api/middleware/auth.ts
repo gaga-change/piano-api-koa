@@ -1,10 +1,15 @@
 import {Context, Next} from "koa";
 import code from "../config/code";
+import {wxAuth} from "./wx";
 
 /** 校验是否登录 */
 export const checkAuth: any = async (ctx: Context, next: Next) => {
-  ctx.assert(ctx.session.user, code.Unauthorized, '用户未登录')
-  await next()
+  if (ctx.openid) {
+    await wxAuth(ctx, next)
+  } else {
+    ctx.assert(ctx.session.user, code.Unauthorized, '用户未登录')
+    await next()
+  }
 }
 
 /** 校验是否未 admin 权限 */

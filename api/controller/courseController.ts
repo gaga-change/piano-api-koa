@@ -10,6 +10,7 @@ import {TEACHER_DB_NAME} from "../config/dbName";
 import code from "../config/code";
 import {COURSE_STATUS_READY} from "../config/const";
 import ClassTime from "../models/ClassTime";
+import LeaveArea from "../models/LeaveArea";
 
 @RequestMapping('courses')
 export  class CourseController extends Controller<CourseDocument> {
@@ -68,7 +69,12 @@ export  class CourseController extends Controller<CourseDocument> {
   @DeleteMapping(':id', [checkAuth])
   async destroy(ctx: Context) {
     const {id} = ctx.params;
-    ctx.body = await Course.deleteOne({_id: id})
+    const res = await Course.deleteOne({_id: id})
+    setImmediate( async () => {
+      // 删除相应的请假记录
+      await LeaveArea.deleteMany({course: id})
+    })
+    ctx.body = res
   }
 
   /** 更新 */
@@ -123,5 +129,3 @@ export  class CourseController extends Controller<CourseDocument> {
     }
   }
 }
-
-export default new CourseController(Course)
