@@ -3,6 +3,31 @@ import {Context} from "koa";
 
 import code from '../config/code';
 
+// @PostMapping("")
+// async create(ctx: Context): Promise<void> {
+//   await super.create(ctx);
+// }
+//
+// @DeleteMapping(":id")
+// async destroy(ctx: Context): Promise<void> {
+//   await super.destroy(ctx);
+// }
+//
+// @PutMapping(":id")
+// async update(ctx: Context): Promise<void> {
+//   await super.update(ctx);
+// }
+//
+// @GetMapping(":id")
+// async show(ctx: Context): Promise<void> {
+//   await super.show(ctx);
+// }
+//
+// @GetMapping("")
+// async index(ctx: Context): Promise<void> {
+//   await super.index(ctx);
+// }
+
 interface Options {
   defaultSort?: Object
 }
@@ -18,10 +43,8 @@ class Controller<T extends Document> {
   }
 
   async create(ctx: Context) {
-    let item = ctx.request.body;
-
-    item = new this.Model(item);
-    ctx.body = await item.save()
+    const model = new this.Model(ctx.request.body);
+    ctx.body = await model.save()
   }
 
   async destroy(ctx: Context) {
