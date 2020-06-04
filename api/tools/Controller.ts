@@ -44,7 +44,7 @@ class Controller<T extends Document> {
     const { id } = ctx.params;
     const model = await this.Model.findById(id)
     ctx.assert(model, code.BadRequest, "数据已被删除！")
-    ctx.body = await this.Model.findById(id)
+    ctx.body = model
   }
 
   async index(ctx: Context) {

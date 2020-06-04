@@ -6,6 +6,7 @@ import Application from "koa";
 import Controller from '../tools/Controller';
 import SpaceRule from "../models/SpaceRule";
 import {teacherRegisterSuccess} from "./wx/pushMsg";
+import code from "../config/code";
 
 @RequestMapping('teachers')
 export class TeacherController extends Controller<TeacherDocument> {
@@ -47,7 +48,10 @@ export class TeacherController extends Controller<TeacherDocument> {
 
   @GetMapping(':id', )
   async show(ctx: Application.Context): Promise<void> {
-    await super.show(ctx);
+    const { id } = ctx.params;
+    const teacher = await Teacher.findById(id).populate({path: 'type', select: 'name'})
+    ctx.assert(teacher, code.BadRequest, "数据已被删除！")
+    ctx.body = teacher
   }
 
   @GetMapping('')

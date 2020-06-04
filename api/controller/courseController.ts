@@ -13,10 +13,35 @@ import ClassTime from "../models/ClassTime";
 import LeaveArea from "../models/LeaveArea";
 
 @RequestMapping('courses')
-export  class CourseController extends Controller<CourseDocument> {
+export class CourseController extends Controller<CourseDocument> {
 
   @Inject(Course)
   Model: any
+
+  /**
+   * 查询某人某月的所有课程
+   * @param ctx
+   */
+  @GetMapping('findByPersonAndMonth')
+  async findByPersonAndMonth(ctx: Context) {
+    const {person, month} = ctx.query
+    ctx.assert(person && month, code.BadRequest, '参数不全')
+    const monthStart = new Date(month)
+    monthStart.setDate(1)
+    monthStart.setHours(0, 0, 0, 0)
+    const monthEnd = new Date(monthStart)
+    if (monthStart.getMonth() === 11) {
+      monthEnd.setMonth(0)
+      monthEnd.setFullYear(monthStart.getFullYear() + 1)
+    } else {
+      monthEnd.setMonth(monthStart.getMonth() + 1)
+    }
+    console.log(monthStart, monthEnd)
+    ctx.body = await Course.find({
+      $or: [{teacher: person}, {student: person}],
+      startTime: {$gte: monthStart, $lt: monthEnd}
+    }).populate('teacher').populate('student').populate('classType').populate('classTime')
+  }
 
   /**
    * 获取当前周期内的 所有课程
@@ -34,15 +59,15 @@ export  class CourseController extends Controller<CourseDocument> {
    * @param ctx
    */
   @GetMapping('findByPersonAndDay')
-  async findByPersonAndDay (ctx : Context) {
-    const {person : personId, date: dateStr} = ctx.query
-    const person = await  Person.findById(personId)
+  async findByPersonAndDay(ctx: Context) {
+    const {person: personId, date: dateStr} = ctx.query
+    const person = await Person.findById(personId)
     ctx.assert(person && dateStr, code.BadRequest, '参数异常')
     const startTime = initHour(dateStr)
     const endTime = new Date(startTime.getTime() + ONE_DAY_TIME)
     ctx.body = await Course.find({
       ...(person.kind === TEACHER_DB_NAME ? {teacher: person} : {student: person}),
-      startTime: { $gte: startTime, $lt: endTime },
+      startTime: {$gte: startTime, $lt: endTime},
       status: COURSE_STATUS_READY
     }).populate('teacher').populate('student')
   }
@@ -58,10 +83,11 @@ export  class CourseController extends Controller<CourseDocument> {
     const classTime = await ClassTime.findById(body.classTime)
     ctx.assert(classTime, code.BadRequest, '请选择课时长')
     const endTime = new Date(new Date(startTime).getTime() + classTime.time * 60 * 1000)
-    const coursesByStudent = await Course.findByTimeArea(startTime, endTime, undefined, student, { status:  COURSE_STATUS_READY })
+    const coursesByStudent = await Course.findByTimeArea(startTime, endTime, undefined, student, {status: COURSE_STATUS_READY})
     ctx.assert(coursesByStudent.length === 0, 400, '学生课程时间有重叠')
-    const courseByTeacher =  await Course.findByTimeArea(startTime, endTime, teacher, undefined, {status:  COURSE_STATUS_READY } )
+    const courseByTeacher = await Course.findByTimeArea(startTime, endTime, teacher, undefined, {status: COURSE_STATUS_READY})
     ctx.assert(courseByTeacher.length === 0, 400, '教师课程时间有重叠')
+    body.endTime = endTime
     ctx.body = await Course.create(body)
   }
 
@@ -70,7 +96,7 @@ export  class CourseController extends Controller<CourseDocument> {
   async destroy(ctx: Context) {
     const {id} = ctx.params;
     const res = await Course.deleteOne({_id: id})
-    setImmediate( async () => {
+    setImmediate(async () => {
       // 删除相应的请假记录
       await LeaveArea.deleteMany({course: id})
     })
@@ -90,10 +116,17 @@ export  class CourseController extends Controller<CourseDocument> {
     ctx.assert(classTime, code.BadRequest, '请选择课时长')
     const endTime = new Date(new Date(startTime).getTime() + classTime.time * 60 * 1000)
     // 查询和非本课程的其他课程 是否有重叠，排除对方请假的
-    const coursesByStudent = await Course.findByTimeArea(startTime, endTime, undefined, student , {_id: {$ne: id}, status:  COURSE_STATUS_READY })
-    ctx.assert(coursesByStudent.length === 0 , 400, '学生课程时间有重叠')
-    const courseByTeacher =  await Course.findByTimeArea(startTime, endTime, teacher, undefined , {_id: {$ne: id}, status:  COURSE_STATUS_READY  })
+    const coursesByStudent = await Course.findByTimeArea(startTime, endTime, undefined, student, {
+      _id: {$ne: id},
+      status: COURSE_STATUS_READY
+    })
+    ctx.assert(coursesByStudent.length === 0, 400, '学生课程时间有重叠')
+    const courseByTeacher = await Course.findByTimeArea(startTime, endTime, teacher, undefined, {
+      _id: {$ne: id},
+      status: COURSE_STATUS_READY
+    })
     ctx.assert(courseByTeacher.length === 0, 400, '教师课程时间有重叠')
+    body.endTime = endTime
     ctx.body = await this.Model.updateOne({_id: id}, body)
   }
 
