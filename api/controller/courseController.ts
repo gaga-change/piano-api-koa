@@ -36,7 +36,6 @@ export class CourseController extends Controller<CourseDocument> {
     } else {
       monthEnd.setMonth(monthStart.getMonth() + 1)
     }
-    console.log(monthStart, monthEnd)
     ctx.body = await Course.find({
       $or: [{teacher: person}, {student: person}],
       startTime: {$gte: monthStart, $lt: monthEnd}

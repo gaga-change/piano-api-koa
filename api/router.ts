@@ -7,7 +7,6 @@ const router = new Router({prefix: '/api'})
 
 console.log('controllers 载入', Object.keys(controllers))
 routerMap.forEach(({method, path, middleware}) => {
-  // console.log(method, ' ', path())
   router.register(path(), [method], middleware)
 })
 

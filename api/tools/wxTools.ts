@@ -82,7 +82,6 @@ export  async function syncTags(type: string) {
 async function getUserByTag(type: string, tagid: any) {
   const token = await getToken(type)
   const res = await axios.post(`https://api.weixin.qq.com/cgi-bin/user/tag/get?access_token=${token}`, { tagid })
-  console.log(res.data.data)
   return res.data.data.openid
 }
 

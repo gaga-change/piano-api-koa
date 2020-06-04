@@ -162,7 +162,6 @@ export class SpaceRuleController extends Controller<SpaceRuleDocument> {
       let spaceAreas: Array<SpaceAreaDocument> = [{startTime, endTime}]
       out.push(...cropAreaTime(spaceAreas, [...courses01, ...courses02]).map(v => ({...v, person})))
     }
-    console.log(out.map(v => ({...v, person: v.person})))
     // 保留交集
     ctx.body = out.map((obj) => {
       const st = Math.max(obj.startTime.getTime(), startTime.getTime())

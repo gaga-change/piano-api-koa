@@ -40,7 +40,6 @@ export class WxController {
   async createMenu(ctx: Context) {
     const teacherToken = await getToken(TEACHER_TYPE)
     const studentToken = await getToken(STUDENT_TYPE)
-    console.log(teacherToken, studentToken)
     const res1 = await axios.post(`https://api.weixin.qq.com/cgi-bin/menu/create?access_token=${teacherToken}`, TEACHER_MENU)
     const res2 = await axios.post(`https://api.weixin.qq.com/cgi-bin/menu/create?access_token=${studentToken}`, STUDENT_MENU)
 
@@ -119,7 +118,6 @@ export class WxController {
   @PostMapping('server')
   async wxPostServer(ctx: Context) {
     const res: any = convert.xml2js(ctx.request.body, {compact: true})
-    console.log(res.xml)
     const event: string | undefined = res.xml.Event && res.xml.Event._cdata
     const msgType: string = res.xml.MsgType._cdata
     const fromUserName: string = res.xml.FromUserName._cdata

@@ -14,7 +14,6 @@ export class ShareController {
     const match = ctx.query
     delete match.pageSize
     delete match.pageNum
-    console.log(match)
     const shareList = await Share.aggregate([
       {
         $lookup: {
