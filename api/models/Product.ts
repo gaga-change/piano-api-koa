@@ -1,21 +1,17 @@
-import mongoose, {Document, Schema} from 'mongoose';
+import {Schema} from 'mongoose';
+import Dict, {DictDocument} from "./Dict";
+import {PRODUCT_DB_NAME} from "../config/dbName";
 
-export interface ProductDocument extends Document {
-  name: string
+export interface ProductDocument extends DictDocument {
   price: number
-  totalTime: number
-  disabled: boolean
-  remark: string
+  time: number
 }
 
 const schema = new Schema({
-  name: {type: String, default: '', trim: true}, // 名称
   price: {type: Number, default: 0}, // 价格
-  totalTime: {type: Number, default: 0}, // 总课时
-  disabled: {type: Boolean, default: false }, // 是否禁用
-  remark: {type: String, default: '', trim: true}, // 备注
+  time: {type: Number, default: 0}, // 总课时
 }, {
   timestamps: true,
 })
 
-export default mongoose.model<ProductDocument>('Product', schema, 'piano_product')
+export default Dict.discriminator<ProductDocument>('Product', schema, PRODUCT_DB_NAME)

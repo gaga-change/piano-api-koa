@@ -16,7 +16,7 @@ export class OrderController extends Controller<OrderDocument> {
   async create(ctx: Context): Promise<void> {
     let order = new Order(ctx.request.body)
     const product = await Product.findById(order.product)
-    order.excessTime = product && product.totalTime // 剩余时间 初始 等于商品的总时间
+    order.excessTime = product && product.time // 剩余时间 初始 等于商品的总时间
     ctx.body = await order.save()
   }
 

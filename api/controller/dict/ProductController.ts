@@ -1,6 +1,6 @@
-import Controller from "../tools/Controller";
-import Product, {ProductDocument} from "../models/Product";
-import {DeleteMapping, GetMapping, Inject, PostMapping, PutMapping} from "../desc";
+import Controller from "../../tools/Controller";
+import Product, {ProductDocument} from "../../models/Product";
+import {DeleteMapping, GetMapping, Inject, PostMapping, PutMapping} from "../../desc";
 import {Context} from "koa";
 
 
@@ -8,6 +8,9 @@ import {Context} from "koa";
 export class ProductController extends Controller<ProductDocument> {
   @Inject(Product)
   Model:any
+
+  @Inject({disabled: 1, createdAt: -1,})
+  defaultSort: any
 
   @PostMapping("")
   async create(ctx: Context): Promise<void> {

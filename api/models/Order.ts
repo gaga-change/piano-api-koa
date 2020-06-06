@@ -18,4 +18,4 @@ const schema = new Schema({
   timestamps: true,
 })
 
-export default mongoose.model<OrderDocument>('Product', schema, 'piano_product')
+export default mongoose.model<OrderDocument>('Order', schema, 'piano_order')
