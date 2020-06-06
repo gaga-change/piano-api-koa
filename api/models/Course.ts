@@ -9,6 +9,7 @@ import {initStartTimeAndEndTimeSchema, startTimeAndEndTimeSchema} from "./startT
 import {COURSE_PERSON_STATUS_MAP, COURSE_STATUS_MAP} from "../config/enums";
 import ClassTime, {ClassTimeDocument} from "./ClassTime";
 import {ClassTypeDocument} from "./ClassType";
+import {OrderDocument} from "./Order";
 
 export interface CourseDocument extends Document {
   startTime: Date
@@ -20,6 +21,7 @@ export interface CourseDocument extends Document {
   status: number
   classType: Schema.Types.ObjectId | ClassTypeDocument | string
   classTime: Schema.Types.ObjectId | ClassTimeDocument | string
+  order?: Schema.Types.ObjectId | OrderDocument | string
   remark?: string
 }
 
@@ -32,6 +34,7 @@ const schema = new Schema({
   status: {type: Number, default: 0, enum: [...COURSE_STATUS_MAP.keys()]}, // 状态
   classType: {type: Schema.Types.ObjectId, ref: 'ClassType', required: true}, // 课类型
   classTime: {type: Schema.Types.ObjectId, ref: 'ClassTime', required: true}, // 课时长
+  order: {type: Schema.Types.ObjectId, ref: 'Order'}, // 订单
   remark: {type: String, default: '', trim: true}, // 备注
 }, {
   timestamps: true,

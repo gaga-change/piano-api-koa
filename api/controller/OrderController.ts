@@ -1,5 +1,5 @@
 import Controller from "../tools/Controller";
-import {DeleteMapping, GetMapping, Inject, PostMapping, PutMapping} from "../desc";
+import {GetMapping, Inject, PostMapping, PutMapping} from "../desc";
 import {Context} from "koa";
 import Order, {OrderDocument} from "../models/Order";
 import code from "../config/code";
@@ -20,18 +20,18 @@ export class OrderController extends Controller<OrderDocument> {
     ctx.body = await order.save()
   }
 
-  @DeleteMapping(":id")
-  async destroy(ctx: Context): Promise<void> {
-    await super.destroy(ctx);
-  }
+  // @DeleteMapping(":id")
+  // async destroy(ctx: Context): Promise<void> {
+  //   await super.destroy(ctx);
+  // }
 
   @PutMapping(":id")
   async update(ctx: Context): Promise<void> {
-    const { id } = ctx.params;
-    const item =  _.omit(ctx.request.body, ['excessTime'])
+    const {id} = ctx.params;
+    const item = _.omit(ctx.request.body, ['excessTime']) // 剩余时间不允许修改
     const model = await this.Model.findById(id)
     ctx.assert(model, code.BadRequest, "数据已被删除！")
-    await this.Model.updateOne({ _id: id }, item)
+    await this.Model.updateOne({_id: id}, item)
     ctx.body = null
   }
 
