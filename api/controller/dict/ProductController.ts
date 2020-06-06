@@ -1,28 +1,24 @@
 import Controller from "../../tools/Controller";
 import Product, {ProductDocument} from "../../models/Product";
-import {DeleteMapping, GetMapping, Inject, PostMapping, PutMapping} from "../../desc";
+import {GetMapping, Inject, PostMapping, PutMapping} from "../../desc";
 import {Context} from "koa";
+import {checkAuth} from "../../middleware/auth";
 
 
 @GetMapping("products")
 export class ProductController extends Controller<ProductDocument> {
   @Inject(Product)
-  Model:any
+  Model: any
 
   @Inject({disabled: 1, createdAt: -1,})
   defaultSort: any
 
-  @PostMapping("")
+  @PostMapping("", [checkAuth,])
   async create(ctx: Context): Promise<void> {
     await super.create(ctx);
   }
 
-  @DeleteMapping(":id")
-  async destroy(ctx: Context): Promise<void> {
-    await super.destroy(ctx);
-  }
-
-  @PutMapping(":id")
+  @PutMapping(":id", [checkAuth,])
   async update(ctx: Context): Promise<void> {
     await super.update(ctx);
   }

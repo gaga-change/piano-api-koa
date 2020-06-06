@@ -5,6 +5,7 @@ import Order, {OrderDocument} from "../models/Order";
 import code from "../config/code";
 import _ from "lodash";
 import Product from "../models/Product";
+import {checkAuth} from "../middleware/auth";
 
 
 @GetMapping("orders")
@@ -12,7 +13,7 @@ export class OrderController extends Controller<OrderDocument> {
   @Inject(Order)
   Model: any
 
-  @PostMapping("")
+  @PostMapping("", [checkAuth,])
   async create(ctx: Context): Promise<void> {
     let order = new Order(ctx.request.body)
     const product = await Product.findById(order.product)
@@ -25,7 +26,7 @@ export class OrderController extends Controller<OrderDocument> {
   //   await super.destroy(ctx);
   // }
 
-  @PutMapping(":id")
+  @PutMapping(":id", [checkAuth,])
   async update(ctx: Context): Promise<void> {
     const {id} = ctx.params;
     const item = _.omit(ctx.request.body, ['excessTime']) // 剩余时间不允许修改
