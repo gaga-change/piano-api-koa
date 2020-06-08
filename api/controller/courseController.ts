@@ -8,9 +8,12 @@ import Person from "../models/Person";
 import {initHour, ONE_DAY_TIME} from "../tools/dateTools";
 import {TEACHER_DB_NAME} from "../config/dbName";
 import code from "../config/code";
-import {COURSE_STATUS_READY} from "../config/const";
+import {COURSE_STATUS_NO_PASS, COURSE_STATUS_READY} from "../config/const";
 import ClassTime from "../models/ClassTime";
 import LeaveArea from "../models/LeaveArea";
+import {mongoSession} from "../middleware/mongoSession";
+import Order from "../models/Order";
+import ThrowError from "../tools/ThrowError";
 
 @RequestMapping('courses')
 export class CourseController extends Controller<CourseDocument> {
@@ -72,9 +75,10 @@ export class CourseController extends Controller<CourseDocument> {
   }
 
   /** 创建 */
-  @PostMapping('', [checkAuth,])
+  @PostMapping('', [checkAuth, mongoSession])
   async create(ctx: Context) {
     const body = ctx.request.body
+    const {session} = ctx.state
     // 判断是否重叠
     const {startTime, teacher, student} = body
     ctx.assert(startTime && teacher && student && body.classTime, 400, '参数异常')
@@ -82,12 +86,22 @@ export class CourseController extends Controller<CourseDocument> {
     const classTime = await ClassTime.findById(body.classTime)
     ctx.assert(classTime, code.BadRequest, '请选择课时长')
     const endTime = new Date(new Date(startTime).getTime() + classTime.time * 60 * 1000)
-    const coursesByStudent = await Course.findByTimeArea(startTime, endTime, undefined, student, {status: COURSE_STATUS_READY})
-    ctx.assert(coursesByStudent.length === 0, 400, '学生课程时间有重叠')
-    const courseByTeacher = await Course.findByTimeArea(startTime, endTime, teacher, undefined, {status: COURSE_STATUS_READY})
-    ctx.assert(courseByTeacher.length === 0, 400, '教师课程时间有重叠')
+    const course = new Course(body)
+    if (course.status !== COURSE_STATUS_NO_PASS) {// 取消无需校验
+      const coursesByStudent = await Course.findByTimeArea(startTime, endTime, undefined, student, {status: COURSE_STATUS_READY})
+      ctx.assert(coursesByStudent.length === 0, 400, '学生课程时间有重叠')
+      const courseByTeacher = await Course.findByTimeArea(startTime, endTime, teacher, undefined, {status: COURSE_STATUS_READY})
+      ctx.assert(courseByTeacher.length === 0, 400, '教师课程时间有重叠')
+      if (course.order) { // 订单剩余时间减少
+        const order = await Order.findByIdAndUpdate(course.order, {$inc: {excessTime: -classTime.time}}, {
+          new: true,
+          session
+        })
+        if (order.excessTime < 0) throw new ThrowError("订单剩余时间不足！")
+      }
+    }
     body.endTime = endTime
-    ctx.body = await Course.create(body)
+    ctx.body = await course.save({session})
   }
 
   /** 删除 */
@@ -103,8 +117,9 @@ export class CourseController extends Controller<CourseDocument> {
   }
 
   /** 更新 */
-  @PutMapping(':id', [checkAuth])
+  @PutMapping(':id', [checkAuth, mongoSession])
   async update(ctx: Context) {
+    const {session} = ctx.state
     const {id} = ctx.params;
     const body = ctx.request.body;
     // 判断是否重叠
@@ -114,19 +129,21 @@ export class CourseController extends Controller<CourseDocument> {
     const classTime = await ClassTime.findById(body.classTime)
     ctx.assert(classTime, code.BadRequest, '请选择课时长')
     const endTime = new Date(new Date(startTime).getTime() + classTime.time * 60 * 1000)
-    // 查询和非本课程的其他课程 是否有重叠，排除对方请假的
-    const coursesByStudent = await Course.findByTimeArea(startTime, endTime, undefined, student, {
-      _id: {$ne: id},
-      status: COURSE_STATUS_READY
-    })
-    ctx.assert(coursesByStudent.length === 0, 400, '学生课程时间有重叠')
-    const courseByTeacher = await Course.findByTimeArea(startTime, endTime, teacher, undefined, {
-      _id: {$ne: id},
-      status: COURSE_STATUS_READY
-    })
-    ctx.assert(courseByTeacher.length === 0, 400, '教师课程时间有重叠')
+    if (body.status !== COURSE_STATUS_NO_PASS) { // 取消无需校验
+      // 查询和非本课程的其他课程 是否有重叠，排除对方请假的
+      const coursesByStudent = await Course.findByTimeArea(startTime, endTime, undefined, student, {
+        _id: {$ne: id},
+        status: COURSE_STATUS_READY
+      })
+      ctx.assert(coursesByStudent.length === 0, 400, '学生课程时间有重叠')
+      const courseByTeacher = await Course.findByTimeArea(startTime, endTime, teacher, undefined, {
+        _id: {$ne: id},
+        status: COURSE_STATUS_READY
+      })
+      ctx.assert(courseByTeacher.length === 0, 400, '教师课程时间有重叠')
+    }
     body.endTime = endTime
-    ctx.body = await this.Model.updateOne({_id: id}, body)
+    ctx.body = await this.Model.updateOne({_id: id}, body, {session})
   }
 
   @GetMapping(':id')
@@ -153,6 +170,7 @@ export class CourseController extends Controller<CourseDocument> {
       .populate({path: 'student', select: 'name'})
       .populate({path: 'classType', select: 'name'})
       .populate({path: 'classTime', select: 'name time'})
+      .populate({path: 'order', populate: "product"})
       .skip((page - 1) * pageSize)
     const res2 = this.Model.countDocuments(params)
     ctx.body = {

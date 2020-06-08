@@ -13,6 +13,23 @@ export class OrderController extends Controller<OrderDocument> {
   @Inject(Order)
   Model: any
 
+  /**
+   * 获取未完成的订单
+   * @param ctx
+   */
+  @GetMapping("findByStudentAndNoComplete")
+  async findByStudentAndNoComplete(ctx: Context) {
+    const query = ctx.query || {};
+    console.log()
+    ctx.body = await this.Model.find({
+      excessTime: {$ne: 0},
+      ...query
+    })
+      .populate('product')
+      .populate('student')
+      .sort({createdAt: -1})
+  }
+
   @PostMapping("", [checkAuth,])
   async create(ctx: Context): Promise<void> {
     let order = new Order(ctx.request.body)
@@ -46,7 +63,7 @@ export class OrderController extends Controller<OrderDocument> {
     const query = ctx.query;
     const pageSize = Number(ctx.query.pageSize) || 20
     const page = Number(ctx.query.pageNum) || 1
-    const params = { ...query }
+    const params = {...query}
     delete params.pageSize
     delete params.pageNum
     Object.keys(params).forEach(key => {
@@ -57,7 +74,7 @@ export class OrderController extends Controller<OrderDocument> {
     const res1 = this.Model.find(params)
       .populate('product')
       .populate('student')
-      .sort(this.defaultSort || { createdAt: -1 })
+      .sort(this.defaultSort || {createdAt: -1})
       .limit(pageSize)
       .skip((page - 1) * pageSize)
     const res2 = this.Model.countDocuments(params)
