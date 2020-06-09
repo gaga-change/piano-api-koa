@@ -21,6 +21,9 @@ export class CourseController extends Controller<CourseDocument> {
   @Inject(Course)
   Model: any
 
+  @Inject({ createdAt: -1 })
+  defaultSort: any
+
   /**
    * 查询某人某月的所有课程
    * @param ctx
