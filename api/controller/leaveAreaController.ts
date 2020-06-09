@@ -9,28 +9,37 @@ import Person from "../models/Person";
 import {TEACHER_DB_NAME} from "../config/dbName";
 import code from "../config/code";
 import only from "../tools/only";
+import Order from "../models/Order";
 
 /**
  * 请假通过
  * @param leaveArea
  */
 const passLeaveArea = async (leaveArea: LeaveAreaDocument) => {
-    const course = await Course.findById(leaveArea.course)
-    const person = await Person.findById(leaveArea.person)
-    if (course && person) {
-      let adverse
-      if (person.kind === TEACHER_DB_NAME) { // 通过后把课程的对象删除
-        adverse = course.student
-        course.teacherStatus = COURSE_PERSON_STATUS_LEAVE
-      } else {
-        adverse = course.teacher
-        course.studentStatus = COURSE_PERSON_STATUS_LEAVE
-      }
-      course.status = COURSE_STATUS_NO_PASS // 课程状态改为已取消
-      leaveArea.adverse = adverse
-      await leaveArea.save()
-      await course.save()
+  const course = await Course.findById(leaveArea.course).populate('classTime').populate('order')
+  const person = await Person.findById(leaveArea.person)
+  if (course && person) {
+    let adverse
+    if (person.kind === TEACHER_DB_NAME) { // 通过后把课程的对象删除
+      adverse = course.student
+      course.teacherStatus = COURSE_PERSON_STATUS_LEAVE
+    } else {
+      adverse = course.teacher
+      course.studentStatus = COURSE_PERSON_STATUS_LEAVE
     }
+    course.status = COURSE_STATUS_NO_PASS // 课程状态改为已取消
+    {
+      const classTime: any = course.classTime
+      const order: any = course.order
+      if (order && classTime) { // 订单剩余时间恢复
+        await Order.update({_id: order._id}, {$inc: {excessTime: classTime.time}},)
+      }
+    }
+
+    leaveArea.adverse = adverse
+    await leaveArea.save()
+    await course.save()
+  }
 }
 
 @RequestMapping("leaveAreas")

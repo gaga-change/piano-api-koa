@@ -122,6 +122,18 @@ export class CourseController extends Controller<CourseDocument> {
     const {session} = ctx.state
     const {id} = ctx.params;
     const body = ctx.request.body;
+    {
+      // 还原订单
+      const oldCourse = await Course.findById(id).populate('order').populate('classTime')
+      const classTime: any = oldCourse.classTime
+      const order: any = oldCourse.order
+      if (order && classTime) {
+        await Order.findByIdAndUpdate(order._id, {$inc: {excessTime: classTime.time}}, {
+          new: true,
+          session
+        })
+      }
+    }
     // 判断是否重叠
     const {startTime, teacher, student} = body
     ctx.assert(startTime && teacher && student && body.classTime, 400, '参数异常')
@@ -141,6 +153,13 @@ export class CourseController extends Controller<CourseDocument> {
         status: COURSE_STATUS_READY
       })
       ctx.assert(courseByTeacher.length === 0, 400, '教师课程时间有重叠')
+      if (body.order) { // 订单剩余时间减少
+        const order = await Order.findByIdAndUpdate(body.order, {$inc: {excessTime: -classTime.time}}, {
+          new: true,
+          session
+        })
+        if (order.excessTime < 0) throw new ThrowError("订单剩余时间不足！")
+      }
     }
     body.endTime = endTime
     ctx.body = await this.Model.updateOne({_id: id}, body, {session})

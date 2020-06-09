@@ -23,6 +23,7 @@ export class OrderController extends Controller<OrderDocument> {
     console.log()
     ctx.body = await this.Model.find({
       excessTime: {$ne: 0},
+      cancel: false,
       ...query
     })
       .populate('product')
