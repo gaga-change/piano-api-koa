@@ -14,6 +14,7 @@ export interface TakeCourseDocument extends Document {
   classType: Schema.Types.ObjectId | ClassTypeDocument | string
   classTime: Schema.Types.ObjectId | ClassTimeDocument | string
   order?: Schema.Types.ObjectId | OrderDocument | string
+  teacherTypes: Array<Schema.Types.ObjectId>
   cancel: boolean
   remark?: string
 }
@@ -26,6 +27,7 @@ const schema = new Schema({
   classType: {type: Schema.Types.ObjectId, ref: 'ClassType', required: true}, // 课类型
   classTime: {type: Schema.Types.ObjectId, ref: 'ClassTime', required: true}, // 课时长
   order: {type: Schema.Types.ObjectId, ref: 'Order'}, // 订单
+  teacherTypes: [Schema.Types.ObjectId], // 教师类型
   cancel: {type: Boolean, default: false},
   remark: {type: String, default: '', trim: true}, // 备注
 }, {

@@ -3,7 +3,25 @@ import TakeCourse, {TakeCourseDocument} from "../models/TakeCourse";
 import {GetMapping, Inject, PostMapping, PutMapping, RequestMapping} from "../desc";
 import {Context} from "koa";
 import {Model} from "mongoose";
+import Teacher from "../models/Teacher";
+import Student from "../models/Student";
+import {teacherTakeCourse} from "./wx/pushMsg";
 
+const pushMsg = (takeCouseId: String) => {
+  setImmediate(async () => {
+    // 消息推送
+    const takeCourse = await TakeCourse.findById(takeCouseId).populate('classTime')
+    const student = await Student.findById(takeCourse.student)
+    const teacherTypes = takeCourse.teacherTypes
+    if (teacherTypes && teacherTypes.length) {
+      const teachers = await Teacher.find({type: {$in: teacherTypes}})
+      console.log('消息推送 ', teachers.map(v => v.name))
+      teachers.forEach((teacher) => {
+        teacherTakeCourse(teacher, student, takeCourse)
+      })
+    }
+  })
+}
 
 @RequestMapping("takeCourses")
 export class TakeCourseController extends Controller<TakeCourseDocument> {
@@ -13,7 +31,9 @@ export class TakeCourseController extends Controller<TakeCourseDocument> {
 
   @PostMapping("")
   async create(ctx: Context): Promise<void> {
-    await super.create(ctx);
+    const model = new this.Model(ctx.request.body);
+    ctx.body = await model.save()
+    pushMsg(model._id)
   }
 
   // @DeleteMapping(":id")
@@ -23,6 +43,12 @@ export class TakeCourseController extends Controller<TakeCourseDocument> {
 
   @PutMapping(":id")
   async update(ctx: Context): Promise<void> {
+    {
+      const body = ctx.request.body
+      if ( body.cancel === false) {
+        pushMsg(ctx.params.id)
+      }
+    }
     await super.update(ctx);
   }
 

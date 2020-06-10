@@ -1,8 +1,34 @@
 import {TeacherDocument, StudentDocument} from "../../models";
 import {AxiosResponse} from "axios";
-
+import moment from 'moment'
 import axios from 'axios';
 import { getToken, TEACHER_TYPE, STUDENT_TYPE, getUserByTagName } from '../../tools/wxTools'
+import {TakeCourseDocument} from "../../models/TakeCourse";
+
+export const teacherTakeCourse = async (teacher: TeacherDocument, student: StudentDocument, takeCourse: TakeCourseDocument) => {
+  const token = await getToken(TEACHER_TYPE)
+  const classTime: any = takeCourse.classTime
+  await axios.post(`https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=${token}`, {
+    "touser": teacher.openid,
+    "template_id": "DVy-G8MPZtlZkToOeZFcsX6DmM0pjEUNMR-iBKT7RfA",
+    // "url": "http://page.carry.junn.top/teacher/teacherRegister",
+    "data": {
+      "first": {
+        "value": "抢课通知！"
+      },
+      "keyword1": {
+        "value": "抢课通知"
+      },
+      "keyword2": {
+        "value": `开始时间：${moment(takeCourse.startTime).format("YYYY-MM-DD HH:mm")}，课时：${classTime.time}分钟，学生：${student.name}`
+      },
+      "remark": {
+        "value": "点击进入抢课页面！"
+      },
+
+    }
+  })
+}
 
 export const teacherRegisterSuccess = async (teacher: TeacherDocument) => {
   const token = await getToken(TEACHER_TYPE)
