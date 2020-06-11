@@ -5,13 +5,19 @@ import axios from 'axios';
 import { getToken, TEACHER_TYPE, STUDENT_TYPE, getUserByTagName } from '../../tools/wxTools'
 import {TakeCourseDocument} from "../../models/TakeCourse";
 
+/**
+ * 通知老师抢课
+ * @param teacher
+ * @param student
+ * @param takeCourse
+ */
 export const teacherTakeCourse = async (teacher: TeacherDocument, student: StudentDocument, takeCourse: TakeCourseDocument) => {
   const token = await getToken(TEACHER_TYPE)
   const classTime: any = takeCourse.classTime
   await axios.post(`https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=${token}`, {
     "touser": teacher.openid,
     "template_id": "DVy-G8MPZtlZkToOeZFcsX6DmM0pjEUNMR-iBKT7RfA",
-    // "url": "http://page.carry.junn.top/teacher/teacherRegister",
+    "url": `http://page.teacher.wx.carry.junn.top/teacher/TakeCourse?id=${takeCourse._id}`,
     "data": {
       "first": {
         "value": "抢课通知！"
@@ -30,12 +36,16 @@ export const teacherTakeCourse = async (teacher: TeacherDocument, student: Stude
   })
 }
 
+/**
+ * 老师注册成功通知
+ * @param teacher
+ */
 export const teacherRegisterSuccess = async (teacher: TeacherDocument) => {
   const token = await getToken(TEACHER_TYPE)
   await axios.post(`https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=${token}`, {
     "touser": teacher.openid,
     "template_id": "P2InMFm7yqOiij-9Rmzt7Qdg3FiUcwbaF3tTHu5qL-o",
-    "url": "http://page.carry.junn.top/teacher/teacherRegister",
+    // "url": "http://page.teacher.carry.junn.top/teacher/teacherRegister",
     "topcolor": "#FF0000",
     "data": {
       "first": {
@@ -50,17 +60,20 @@ export const teacherRegisterSuccess = async (teacher: TeacherDocument) => {
       "remark": {
         "value": "发送消息【空闲时段】，设置您的空闲时间段"
       },
-
     }
   })
 }
 
+/**
+ * 学生注册成功通知
+ * @param student
+ */
 export const studentRegisterSuccess = async (student: StudentDocument) => {
   const token = await getToken(STUDENT_TYPE)
   axios.post(`https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=${token}`, {
     "touser": student.openid,
     "template_id": "blQsIsRXXa4V8bltStYNPQZBo-tXqDpsMNRDcvH0mlI",
-    "url": "http://page.carry.junn.top/teacher/teacherRegister",
+    // "url": "http://page.student.carry.junn.top/teacher/teacherRegister",
     "data": {
       "first": {
         "value": "恭喜您成为Carry陪练的会员！"
@@ -88,7 +101,6 @@ export const informTeacherRegister = async (teacher: TeacherDocument) =>  {
     axios.post(`https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=${token}`, {
       "touser": openid,
       "template_id": "yMD7XbC7p4ODXzJ605lL3oZhKICAskFSalrCbNanKGo",
-      "url": "",
       "topcolor": "#FF0000",
       "data": {
         "first": {
@@ -116,7 +128,6 @@ export const informStudentRegister = async (student: StudentDocument) =>  {
     axios.post(`https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=${token}`, {
       "touser": openid,
       "template_id": "l5w82zR0G7PyMz5NY0fKn0Lz6nRJdv3kpZedJnSJYeQ",
-      "url": "",
       "topcolor": "#FF0000",
       "data": {
         "first": {

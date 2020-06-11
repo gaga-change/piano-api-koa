@@ -6,9 +6,43 @@ import {wxAuth, wxCheckOpenid} from "../../../middleware/wx";
 import {PERSON_STATUS_READY} from "../../../config/const";
 import {getToken, STUDENT_TYPE, TEACHER_TYPE} from "../../../tools/wxTools";
 import axios from "axios";
+import TakeCourse from "../../../models/TakeCourse";
+import code from "../../../config/code";
+import {mongoSession} from "../../../middleware/mongoSession";
+import myAssert from "../../../tools/myAssert";
+import Course from "../../../models/Course";
 
 @RequestMapping('/wx/teacher')
 export class WxTeacherController {
+
+  /**
+   * 抢课接口
+   * @param ctx
+   */
+  @PostMapping('takeCourse', [wxAuth, mongoSession])
+  async takeCourse(ctx: Context) {
+    const {user, session} = ctx.state
+    const teacherId = user._id
+    const {takeCourseId } = ctx.request.body
+    const takeCourse = await TakeCourse.findById(takeCourseId, undefined, {session}).populate('classTime')
+    ctx.assert(takeCourse, code.BadRequest, '抢课已被删除')
+    const oldData = await TakeCourse.findByIdAndUpdate(takeCourseId, {teacher: teacherId}, {session})
+    myAssert(!oldData.teacher, '已被抢课！')
+    myAssert(!oldData.cancel, '抢课已取消！')
+    const classTime: any = takeCourse.classTime
+    const course = new Course({
+      startTime: takeCourse.startTime,
+      endTime: new Date(new Date(takeCourse.startTime).getTime() + classTime.time * 60 * 1000),
+      teacher: teacherId,
+      student: takeCourse.student,
+      classType: takeCourse.classType,
+      classTime: takeCourse.classTime,
+      order: takeCourse.order,
+    })
+    await course.save({session})
+    ctx.body = null
+  }
+
   /**
    * 手机端老师注册
    * @param ctx

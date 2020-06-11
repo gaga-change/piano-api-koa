@@ -6,6 +6,9 @@ import {Model} from "mongoose";
 import Teacher from "../models/Teacher";
 import Student from "../models/Student";
 import {teacherTakeCourse} from "./wx/pushMsg";
+import code from "../config/code";
+import _ from 'lodash'
+import {checkAuth} from "../middleware/auth";
 
 const pushMsg = (takeCouseId: String) => {
   setImmediate(async () => {
@@ -27,9 +30,9 @@ const pushMsg = (takeCouseId: String) => {
 export class TakeCourseController extends Controller<TakeCourseDocument> {
 
   @Inject(TakeCourse)
-  Model:Model<TakeCourseDocument>
+  Model: Model<TakeCourseDocument>
 
-  @PostMapping("")
+  @PostMapping("", [checkAuth])
   async create(ctx: Context): Promise<void> {
     const model = new this.Model(ctx.request.body);
     ctx.body = await model.save()
@@ -41,20 +44,22 @@ export class TakeCourseController extends Controller<TakeCourseDocument> {
   //   await super.destroy(ctx);
   // }
 
-  @PutMapping(":id")
+  @PutMapping(":id", [checkAuth])
   async update(ctx: Context): Promise<void> {
-    {
-      const body = ctx.request.body
-      if ( body.cancel === false) {
-        pushMsg(ctx.params.id)
-      }
-    }
-    await super.update(ctx);
+    const {id} = ctx.params;
+    const item = _.omit(ctx.request.body, ['cancel']);
+    const model = await this.Model.findById(id)
+    ctx.assert(model, code.BadRequest, "数据已被删除！")
+    await this.Model.findByIdAndUpdate(id, item)
+    ctx.body = null
   }
 
   @GetMapping(":id")
   async show(ctx: Context): Promise<void> {
-    await super.show(ctx);
+    const {id} = ctx.params;
+    const model = await this.Model.findById(id).populate('student').populate('teacher').populate('classTime')
+    ctx.assert(model, code.BadRequest, "数据已被删除！")
+    ctx.body = model
   }
 
   @GetMapping("")
@@ -62,7 +67,7 @@ export class TakeCourseController extends Controller<TakeCourseDocument> {
     const query = ctx.query;
     const pageSize = Number(ctx.query.pageSize) || 20
     const page = Number(ctx.query.pageNum) || 1
-    const params = { ...query }
+    const params = {...query}
     delete params.pageSize
     delete params.pageNum
     Object.keys(params).forEach(key => {
@@ -71,7 +76,7 @@ export class TakeCourseController extends Controller<TakeCourseDocument> {
       }
     })
     const res1 = this.Model.find(params)
-      .sort(this.defaultSort || { createdAt: -1 })
+      .sort(this.defaultSort || {createdAt: -1})
       .populate('teacher')
       .populate('student')
       .populate('course')
