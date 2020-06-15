@@ -89,6 +89,7 @@ export class CourseController extends Controller<CourseDocument> {
     const classTime = await ClassTime.findById(body.classTime)
     ctx.assert(classTime, code.BadRequest, '请选择课时长')
     const endTime = new Date(new Date(startTime).getTime() + classTime.time * 60 * 1000)
+    body.endTime = endTime
     const course = new Course(body)
     if (course.status !== COURSE_STATUS_NO_PASS) {// 取消无需校验
       const coursesByStudent = await Course.findByTimeArea(startTime, endTime, undefined, student, {status: COURSE_STATUS_READY})
@@ -103,7 +104,6 @@ export class CourseController extends Controller<CourseDocument> {
         if (order.excessTime < 0) throw new ThrowError("订单剩余时间不足！")
       }
     }
-    body.endTime = endTime
     ctx.body = await course.save({session})
   }
 
